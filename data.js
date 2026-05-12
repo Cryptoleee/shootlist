@@ -1,35 +1,25 @@
-// Shootlist data — gebaseerd op timetable.jpg
-// Tijden zijn een eerste inschatting; pas ze gerust aan in deze file als ze niet kloppen.
+// Shootlist data — tijden uit https://www.maaiveldfestival.nl/programma
+// + detail-pagina's per act. Laatst gecheckt: 12 mei 2026.
 
 const ACTS = [
   {
     id: "paul-de-leeuw-njon",
-    name: "Paul de Leeuw x NJON",
+    name: "Paul de Leeuw x NJO Poporkest",
     priority: "high",
     location: "Mainstage (Stationsplein)",
     locationId: 1,
     slots: [
-      { day: "wo", time: "19:30 – 21:00" }
+      { day: "wo", time: "20:00 – 21:00" }
     ]
   },
   {
     id: "hiigo-ereprijs",
-    name: "Hiigo x De Ereprijs",
+    name: "Hiigo x Orkest De Ereprijs",
     priority: "high",
     location: "Mainstage (Stationsplein)",
     locationId: 1,
     slots: [
       { day: "do", time: "15:30 – 16:30" }
-    ]
-  },
-  {
-    id: "thijs-boontjes",
-    name: "Thijs Boontjes",
-    priority: "high",
-    location: "Mainstage (Stationsplein)",
-    locationId: 1,
-    slots: [
-      { day: "do", time: "22:00 – 23:00" }
     ]
   },
   {
@@ -39,44 +29,54 @@ const ACTS = [
     location: "Mainstage (Stationsplein)",
     locationId: 1,
     slots: [
-      { day: "do", time: "19:30 – 20:30" }
+      { day: "do", time: "18:30 – 19:30" }
+    ]
+  },
+  {
+    id: "thijs-boontjes",
+    name: "Thijs Boontjes",
+    priority: "high",
+    location: "Mainstage (Stationsplein)",
+    locationId: 1,
+    slots: [
+      { day: "do", time: "21:30 – 22:30" }
     ]
   },
   {
     id: "waterqueens",
     name: "Waterqueens",
     priority: "high",
-    location: "Kayersbeekhof",
-    locationId: 5,
+    location: "Freulebrug Apeldoorns Kanaal",
+    locationId: 4,
     slots: [
-      { day: "wo", time: "17:30" },
-      { day: "wo", time: "19:30" },
-      { day: "do", time: "15:00" },
-      { day: "do", time: "16:30" },
-      { day: "do", time: "18:00" }
+      { day: "wo", time: "17:30 – 18:00" },
+      { day: "wo", time: "19:00 – 19:30" },
+      { day: "do", time: "15:15 – 15:45" },
+      { day: "do", time: "16:45 – 17:15" }
     ],
-    note: "Meerdere slots — een is genoeg, tenzij eerste mislukt."
+    note: "Eén goede snippet is genoeg — meerdere kansen."
   },
   {
     id: "ripple",
     name: "Ripple",
     priority: "high",
-    location: "Voormalig Verflokaal / Pleats Sophialaan",
+    location: "Parkeerplaats Sophialaan (Verffabriek)",
     locationId: 6,
     slots: [
-      { day: "do", time: "17:00" },
-      { day: "do", time: "19:00" }
+      { day: "do", time: "14:00 – 14:35" },
+      { day: "do", time: "16:00 – 16:35" }
     ]
   },
   {
     id: "head2head",
     name: "HEAD2HEAD",
     priority: "high",
-    location: "Drakenbootloods",
+    location: "Drakenbootloods (Verffabriek)",
     locationId: 6,
     slots: [
-      { day: "do", time: "18:00 – 21:00 (breakdance battles + hiphop showcases)" }
-    ]
+      { day: "do", time: "14:00 – 17:30 (breakdance battles + hiphop showcases)" }
+    ],
+    note: "Lang blok — pak goede shots van de battles."
   },
   {
     id: "operatie-plop",
@@ -85,10 +85,10 @@ const ACTS = [
     location: "Parkeerplaats Nettenfabriek",
     locationId: 2,
     slots: [
-      { day: "do", time: "15:30" },
-      { day: "do", time: "17:00" }
+      { day: "do", time: "15:15 – 15:40" },
+      { day: "do", time: "16:45 – 17:10" }
     ],
-    note: "Spelen hierna ook op Oeverloos & Poolshoogte — back-up moment."
+    note: "Spelen hierna ook op Oeverloos & Poolshoogte — back-up."
   },
   {
     id: "echt-zon-tiep",
@@ -97,12 +97,12 @@ const ACTS = [
     location: "Tuin AER Woning (Nettenfabriek)",
     locationId: 2,
     slots: [
-      { day: "wo", time: "17:30" },
-      { day: "wo", time: "19:00" },
-      { day: "do", time: "14:30" },
-      { day: "do", time: "16:00" }
+      { day: "wo", time: "16:45 – 17:15" },
+      { day: "wo", time: "18:15 – 18:45" },
+      { day: "do", time: "14:00 – 14:30" },
+      { day: "do", time: "16:00 – 16:30" }
     ],
-    note: "Spelen hierna ook op Oeverloos & Poolshoogte — back-up moment."
+    note: "Spelen hierna ook op Oeverloos & Poolshoogte — back-up."
   },
   {
     id: "glitch-copy-herken",
@@ -111,38 +111,43 @@ const ACTS = [
     location: "Parkeerplaats overkapping (Nettenfabriek)",
     locationId: 2,
     slots: [
-      { day: "do", time: "COPY COPY — 14:30" },
-      { day: "do", time: "GLITCH — 15:00" },
-      { day: "do", time: "COPY COPY — 16:00" },
-      { day: "do", time: "GLITCH — 17:00" }
+      { day: "do", time: "COPY COPY — 14:30 – 15:00" },
+      { day: "do", time: "Her-ken — 15:10 – 15:20" },
+      { day: "do", time: "GLITCH — 15:30 – 16:00" },
+      { day: "do", time: "COPY COPY — 16:30 – 17:00" },
+      { day: "do", time: "Her-ken — 17:10 – 17:20" },
+      { day: "do", time: "GLITCH — 17:30 – 18:00" }
     ],
-    note: "Eén van de drie is top — pak de meest visuele."
+    note: "Eén van de drie is top — pak de meest visuele. Opeenvolgend in 2 blokken."
   },
   {
     id: "aaischappij",
-    name: "Aaischappij",
+    name: "Aaischappij door Club Echt",
     priority: "high",
-    location: "Freulebrug Apeldoorns Kanaal",
-    locationId: 4,
+    location: "Kayersbeekhof (Kanaalzone)",
+    locationId: 5,
     slots: [
-      { day: "wo", time: "17:00" },
-      { day: "wo", time: "19:00" },
-      { day: "do", time: "14:30" },
-      { day: "do", time: "16:00" },
-      { day: "do", time: "17:30" }
+      { day: "wo", time: "16:45 – 17:10" },
+      { day: "wo", time: "18:15 – 18:40" },
+      { day: "wo", time: "19:45 – 20:10" },
+      { day: "do", time: "14:30 – 14:55" },
+      { day: "do", time: "16:00 – 16:25" },
+      { day: "do", time: "17:30 – 17:55" }
     ]
   },
   {
     id: "treinpoezietheater",
     name: "Treinpoëzietheater",
     priority: "high",
-    location: "Verhoging station / Onder de bomen",
+    location: "Verhoging station (Stationsplein)",
     locationId: 1,
     slots: [
-      { day: "wo", time: "16:30" },
-      { day: "wo", time: "18:00" },
-      { day: "do", time: "15:30" },
-      { day: "do", time: "17:00" }
+      { day: "wo", time: "16:00 – 16:30" },
+      { day: "wo", time: "17:00 – 17:30" },
+      { day: "wo", time: "18:00 – 18:30" },
+      { day: "do", time: "14:00 – 14:30" },
+      { day: "do", time: "15:15 – 15:45" },
+      { day: "do", time: "16:30 – 17:00" }
     ]
   },
   {
@@ -152,23 +157,23 @@ const ACTS = [
     location: "Stage Plein (Stationsplein)",
     locationId: 1,
     slots: [
-      { day: "wo", time: "16:00" },
-      { day: "wo", time: "17:30" },
-      { day: "wo", time: "19:00" },
-      { day: "do", time: "15:00" },
-      { day: "do", time: "16:30" }
+      { day: "wo", time: "16:00 – 16:20" },
+      { day: "wo", time: "18:00 – 18:20" },
+      { day: "do", time: "15:00 – 15:20" },
+      { day: "do", time: "16:30 – 16:50" },
+      { day: "do", time: "19:30 – 19:50" }
     ]
   },
   {
     id: "taart-voor-iedereen",
     name: "Maakactiviteit: Taart voor iedereen!",
     priority: "high",
-    location: "Parkeerplaats overkapping (buiten, Nettenfabriekterrein)",
+    location: "Parkeerplaats Nettenfabriek (buiten)",
     locationId: 2,
     slots: [
-      { day: "do", time: "14:30 – 17:30 (doorlopend)" }
+      { day: "do", time: "14:00 – 18:00 (doorlopend)" }
     ],
-    note: "Buiten op het Nettenfabriekterrein — pak handen/proces shots."
+    note: "Buiten, doorlopend. Pak handen / proces / sfeer shots."
   },
   {
     id: "symphony-of-fire",
@@ -177,9 +182,9 @@ const ACTS = [
     location: "Stationsplein",
     locationId: 1,
     slots: [
-      { day: "do", time: "22:00 (afsluiter)" }
+      { day: "do", time: "22:30 – 23:00" }
     ],
-    note: "Slotact — perfect voor aftermovie outro."
+    note: "Afsluiter donderdag — perfect voor aftermovie outro."
   },
   {
     id: "complex-compound",
@@ -188,8 +193,8 @@ const ACTS = [
     location: "Stationsplein (doorlopend)",
     locationId: 1,
     slots: [
-      { day: "wo", time: "doorlopend" },
-      { day: "do", time: "doorlopend" }
+      { day: "wo", time: "14:00 – 23:00 (doorlopend)" },
+      { day: "do", time: "14:00 – 22:30 (doorlopend)" }
     ],
     note: "ALLEEN filmen als bezoekers er actief interactie mee hebben."
   }
