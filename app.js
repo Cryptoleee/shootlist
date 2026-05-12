@@ -6,9 +6,13 @@ const state = loadState();
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (!s.filters.sort) s.filters.sort = "time";
+      return s;
+    }
   } catch (e) {}
-  return { slots: {}, notes: {}, filters: { day: "all", status: "all", priorities: [] } };
+  return { slots: {}, notes: {}, filters: { day: "all", status: "all", priorities: [], sort: "time" } };
 }
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -77,6 +81,15 @@ function setupFilters() {
       render();
     });
   });
+  document.querySelectorAll(".filters .chip[data-sort]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filters .chip[data-sort]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.filters.sort = btn.dataset.sort;
+      saveState();
+      render();
+    });
+  });
   // restore filter UI state
   document.querySelectorAll(".filters .chip[data-day]").forEach(b => {
     b.classList.toggle("active", b.dataset.day === state.filters.day);
@@ -84,6 +97,32 @@ function setupFilters() {
   document.querySelectorAll(".filters .chip[data-status]").forEach(b => {
     b.classList.toggle("active", b.dataset.status === state.filters.status);
   });
+  document.querySelectorAll(".filters .chip[data-sort]").forEach(b => {
+    b.classList.toggle("active", b.dataset.sort === state.filters.sort);
+  });
+}
+
+// ---- Time parsing & sort helpers ----
+function parseFirstTimeMinutes(timeStr) {
+  // pakt de eerste HH:MM uit een string, bv "19:30 – 21:00" → 1170
+  const m = String(timeStr).match(/(\d{1,2}):(\d{2})/);
+  if (!m) return 9999; // "doorlopend" of onbekend → onderaan
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
+function earliestSortKey(act, dayFilter) {
+  // geeft [dayOrder, minutes] voor de vroegste relevante slot
+  const slots = dayFilter === "all" ? act.slots : act.slots.filter(s => s.day === dayFilter);
+  if (slots.length === 0) return [9, 9999];
+  let best = [9, 9999];
+  for (const s of slots) {
+    const dayOrder = s.day === "wo" ? 0 : s.day === "do" ? 1 : 2;
+    const mins = parseFirstTimeMinutes(s.time);
+    if (dayOrder < best[0] || (dayOrder === best[0] && mins < best[1])) {
+      best = [dayOrder, mins];
+    }
+  }
+  return best;
 }
 
 function filterActs() {
@@ -99,9 +138,29 @@ function filterActs() {
     if (state.filters.status === "done" && !isActDone(act)) return false;
     return true;
   }).sort((a, b) => {
-    // sort: niet-gedaan eerst, dan op naam
+    // gedane acts altijd onderaan
     const da = isActDone(a), db = isActDone(b);
     if (da !== db) return da ? 1 : -1;
+
+    const mode = state.filters.sort || "time";
+    if (mode === "name") {
+      return a.name.localeCompare(b.name, "nl");
+    }
+    if (mode === "location") {
+      const la = (a.location || "").toLowerCase();
+      const lb = (b.location || "").toLowerCase();
+      if (la !== lb) return la.localeCompare(lb, "nl");
+      // binnen zelfde locatie: op tijd
+      const ka = earliestSortKey(a, state.filters.day);
+      const kb = earliestSortKey(b, state.filters.day);
+      if (ka[0] !== kb[0]) return ka[0] - kb[0];
+      return ka[1] - kb[1];
+    }
+    // default: time
+    const ka = earliestSortKey(a, state.filters.day);
+    const kb = earliestSortKey(b, state.filters.day);
+    if (ka[0] !== kb[0]) return ka[0] - kb[0];
+    if (ka[1] !== kb[1]) return ka[1] - kb[1];
     return a.name.localeCompare(b.name, "nl");
   });
 }
