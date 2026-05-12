@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#0b7a3e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="manifest.json" />
+<title>Shootlist Festival</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1>Shootlist</h1>
+    <button id="resetBtn" class="ghost-btn" title="Alles resetten">Reset</button>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-text"><span id="progressText">0 / 0 vastgelegd</span></div>
+    <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="list">Lijst</button>
+    <button class="tab" data-tab="map">Plattegrond</button>
+    <button class="tab" data-tab="timetable">Timetable</button>
+  </nav>
+</header>
+
+<main>
+  <!-- LIST VIEW -->
+  <section id="view-list" class="view active">
+    <div class="filters">
+      <div class="filter-row">
+        <button class="chip active" data-day="all">Alle</button>
+        <button class="chip" data-day="wo">Wo 13 mei</button>
+        <button class="chip" data-day="do">Do 14 mei</button>
+      </div>
+      <div class="filter-row">
+        <button class="chip secondary active" data-status="all">Alles</button>
+        <button class="chip secondary" data-status="todo">Nog doen</button>
+        <button class="chip secondary" data-status="done">Gedaan</button>
+      </div>
+      <div class="filter-row">
+        <button class="chip tag" data-priority="high">Must-have</button>
+        <button class="chip tag" data-priority="conditional">Conditioneel</button>
+      </div>
+    </div>
+    <div id="actsList" class="acts-list"></div>
+  </section>
+
+  <!-- MAP VIEW -->
+  <section id="view-map" class="view">
+    <div class="image-wrap">
+      <img src="Locaties.jpg" alt="Plattegrond locaties" class="zoom-img" />
+    </div>
+    <div class="legend">
+      <h3>Locaties</h3>
+      <ul>
+        <li><b>1 Stationsplein</b> — Mainstage, Sena Talent Stage, Stage Plein, Onder de bomen, Verhoging station</li>
+        <li><b>2 Nettenfabriek</b> — Grasveld Saxion, Ketelhuis, Parkeerplaats Nettenfabriek, Tuin AER Woning</li>
+        <li><b>3 Wittenborg</b></li>
+        <li><b>4 Freulebrug Apeldoorns Kanaal</b></li>
+        <li><b>5 Kayersbeekhof</b></li>
+        <li><b>6 Voormalig Verflokaal</b> — Parkeerplaats Sophialaan, Drakenbootloods</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TIMETABLE VIEW -->
+  <section id="view-timetable" class="view">
+    <div class="image-wrap">
+      <img src="timetable.jpg" alt="Timetable" class="zoom-img" />
+    </div>
+  </section>
+</main>
+
+<!-- Modal voor notes/details -->
+<div id="modal" class="modal hidden">
+  <div class="modal-inner">
+    <button id="modalClose" class="modal-close">×</button>
+    <h2 id="modalTitle"></h2>
+    <div id="modalMeta" class="modal-meta"></div>
+    <div id="modalSlots" class="modal-slots"></div>
+    <label class="notes-label">Notities</label>
+    <textarea id="modalNotes" placeholder="Welke shots heb je? Welke hoeken? Etc."></textarea>
+    <button id="modalSave" class="primary-btn">Opslaan</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
