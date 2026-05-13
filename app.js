@@ -25,6 +25,31 @@ function isActDone(act) {
   return act.slots.some((_, i) => isSlotDone(act.id, i));
 }
 
+// ---- "Voorbij" detectie ----
+// Pakt het laatste HH:MM in de tijd-string als eindtijd.
+function parseLastTime(timeStr) {
+  const matches = [...String(timeStr).matchAll(/(\d{1,2}):(\d{2})/g)];
+  if (matches.length === 0) return null;
+  const last = matches[matches.length - 1];
+  return { h: parseInt(last[1], 10), m: parseInt(last[2], 10) };
+}
+function slotEndDate(slot) {
+  const t = parseLastTime(slot.time);
+  const d = FESTIVAL_DATES[slot.day];
+  if (!t || !d) return null;
+  const hh = String(t.h).padStart(2, "0");
+  const mm = String(t.m).padStart(2, "0");
+  return new Date(`${d}T${hh}:${mm}:00`);
+}
+function isSlotPast(slot) {
+  const end = slotEndDate(slot);
+  if (!end) return false;
+  return Date.now() > end.getTime();
+}
+function isActPast(act) {
+  return act.slots.length > 0 && act.slots.every(isSlotPast);
+}
+
 function toggleSlot(actId, idx) {
   const k = slotKey(actId, idx);
   if (state.slots[k]) delete state.slots[k];
@@ -138,9 +163,10 @@ function filterActs() {
     if (state.filters.status === "done" && !isActDone(act)) return false;
     return true;
   }).sort((a, b) => {
-    // gedane acts altijd onderaan
-    const da = isActDone(a), db = isActDone(b);
-    if (da !== db) return da ? 1 : -1;
+    // gedane én voorbije acts altijd onderaan
+    const aOut = isActDone(a) || isActPast(a);
+    const bOut = isActDone(b) || isActPast(b);
+    if (aOut !== bOut) return aOut ? 1 : -1;
 
     const mode = state.filters.sort || "time";
     if (mode === "name") {
@@ -194,8 +220,9 @@ function renderList() {
 
 function renderActCard(act) {
   const done = isActDone(act);
+  const past = !done && isActPast(act);
   const card = document.createElement("div");
-  card.className = "act-card" + (done ? " done" : "");
+  card.className = "act-card" + (done ? " done" : "") + (past ? " past" : "");
 
   const slotsForDay = state.filters.day === "all"
     ? act.slots
@@ -213,7 +240,7 @@ function renderActCard(act) {
           act.priority === "conditional"
             ? `<span class="priority-badge conditional">Conditioneel</span>`
             : ""
-        }</h3>
+        }${past ? `<span class="priority-badge past-badge">Voorbij</span>` : ""}</h3>
         <div class="act-meta">
           ${days.map(d => `<span><span class="day-dot ${d}"></span> ${dayLabel(d)}</span>`).join("")}
           <span>📍 ${escapeHtml(act.location)}</span>
@@ -233,13 +260,14 @@ function renderActCard(act) {
   act.slots.forEach((slot, idx) => {
     if (state.filters.day !== "all" && slot.day !== state.filters.day) return;
     const sDone = isSlotDone(act.id, idx);
+    const sPast = !sDone && isSlotPast(slot);
     const sEl = document.createElement("div");
-    sEl.className = "slot" + (sDone ? " captured" : "");
+    sEl.className = "slot" + (sDone ? " captured" : "") + (sPast ? " past" : "");
     sEl.innerHTML = `
       <div class="slot-check ${sDone ? "checked" : ""}" data-slot="${act.id}|${idx}">✓</div>
       <span class="day-dot ${slot.day}"></span>
       <span class="slot-time">${escapeHtml(slot.time)}</span>
-      <span class="slot-loc">${dayLabel(slot.day)}</span>
+      <span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>
     `;
     slotsEl.appendChild(sEl);
   });
@@ -278,6 +306,14 @@ let currentActId = null;
 function openModal(act) {
   currentActId = act.id;
   document.getElementById("modalTitle").textContent = act.name;
+  const photoEl = document.getElementById("modalPhoto");
+  if (act.photo) {
+    photoEl.innerHTML = `<img src="${act.photo}" alt="${escapeHtml(act.name)}" loading="lazy" />`;
+    photoEl.classList.remove("hidden");
+  } else {
+    photoEl.innerHTML = "";
+    photoEl.classList.add("hidden");
+  }
   const days = [...new Set(act.slots.map(s => s.day))];
   document.getElementById("modalMeta").innerHTML = `
     📍 ${escapeHtml(act.location)}<br>
@@ -289,14 +325,15 @@ function openModal(act) {
   slotsEl.innerHTML = "<label class='notes-label'>Slots</label>";
   act.slots.forEach((slot, idx) => {
     const sDone = isSlotDone(act.id, idx);
+    const sPast = !sDone && isSlotPast(slot);
     const row = document.createElement("div");
-    row.className = "slot" + (sDone ? " captured" : "");
+    row.className = "slot" + (sDone ? " captured" : "") + (sPast ? " past" : "");
     row.style.marginBottom = "6px";
     row.innerHTML = `
       <div class="slot-check ${sDone ? "checked" : ""}" data-mslot="${idx}">✓</div>
       <span class="day-dot ${slot.day}"></span>
       <span class="slot-time">${escapeHtml(slot.time)}</span>
-      <span class="slot-loc">${dayLabel(slot.day)}</span>
+      <span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>
     `;
     row.querySelector('[data-mslot]').addEventListener('click', () => {
       toggleSlot(act.id, idx);
@@ -356,3 +393,6 @@ document.querySelectorAll(".zoom-img").forEach(img => {
 // ---- Init ----
 setupFilters();
 render();
+
+// Elke minuut opnieuw renderen zodat "voorbij" status meeloopt met de klok
+setInterval(render, 60_000);
