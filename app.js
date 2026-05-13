@@ -235,7 +235,7 @@ function renderActCard(act) {
   card.innerHTML = `
     <div class="act-header">
       <div class="act-check ${done ? "checked" : ""}" data-toggle="${act.id}">✓</div>
-      <div class="act-info">
+      <div class="act-info" data-open-act>
         <h3 class="act-title">${escapeHtml(act.name)}${
           act.priority === "conditional"
             ? `<span class="priority-badge conditional">Conditioneel</span>`
@@ -285,6 +285,7 @@ function renderActCard(act) {
     });
   });
   card.querySelector('[data-details]').addEventListener('click', () => openModal(act));
+  card.querySelector('[data-open-act]').addEventListener('click', () => openModal(act));
 
   return card;
 }
