@@ -279,7 +279,7 @@ const ACTS = [
     priority: "normal",
     location: "ACEC",
     slots: [
-      { day: "za", time: "12:00 – 19:00" }
+      { day: "za", time: "Open 12:00 – 19:00" }
     ]
   },
   {
@@ -497,9 +497,9 @@ const ACTS = [
     priority: "high",
     location: "Zwitsalhal",
     slots: [
-      { day: "vr", time: "09:00 – 16:30" },
-      { day: "za", time: "09:00 – 16:30" },
-      { day: "zo", time: "09:00 – 16:30" }
+      { day: "vr", time: "Open 09:00 – 16:30" },
+      { day: "za", time: "Open 09:00 – 16:30" },
+      { day: "zo", time: "Open 09:00 – 16:30" }
     ],
     note: "Kinderactiviteiten-highlight uit de briefing. Let extra op toestemming bij herkenbare kinderen."
   },
@@ -509,9 +509,9 @@ const ACTS = [
     priority: "high",
     location: "ACEC",
     slots: [
-      { day: "vr", time: "12:00 – 17:00" },
-      { day: "za", time: "12:00 – 19:00" },
-      { day: "zo", time: "12:00 – 17:00" }
+      { day: "vr", time: "Open 12:00 – 17:00" },
+      { day: "za", time: "Open 12:00 – 19:00" },
+      { day: "zo", time: "Open 12:00 – 17:00" }
     ],
     note: "Kunst-highlight: 'verwonderende mensen' bij de kunst vastleggen, niet alleen het werk."
   },
@@ -521,9 +521,9 @@ const ACTS = [
     priority: "high",
     location: "CODA",
     slots: [
-      { day: "vr", time: "10:00 – 17:30" },
-      { day: "za", time: "10:00 – 17:00 (gratis toegang)" },
-      { day: "zo", time: "10:00 / 11:00 – 17:00" }
+      { day: "vr", time: "Open 10:00 – 17:30" },
+      { day: "za", time: "Open 10:00 – 17:00 (gratis toegang)" },
+      { day: "zo", time: "Open 10:00 / 11:00 – 17:00" }
     ],
     note: "Kroon op de taart! (kids), PRISMA — De keuze van Rikkie Kollé, WINWIN Hester Oerlemans, Cinema Khing, Mini-uitgeverij. Kunst-highlight: verwonderende bezoekers in beeld."
   },
@@ -533,11 +533,11 @@ const ACTS = [
     priority: "normal",
     location: "Theehuis Berg & Bos",
     slots: [
-      { day: "vr", time: "07:00 – 21:00" },
-      { day: "za", time: "07:00 – 21:00" },
-      { day: "zo", time: "07:00 – 21:00" }
+      { day: "vr", time: "Open 07:00 – 21:00 (vrije inloop)" },
+      { day: "za", time: "Open 07:00 – 21:00 (vrije inloop)" },
+      { day: "zo", time: "Open 07:00 – 21:00 (vrije inloop)" }
     ],
-    note: "Buiten de binnenstad — alleen als de route het toelaat."
+    note: "Tentoonstelling, geen optreden — hele dag te bezoeken. Buiten de binnenstad, alleen als de route het toelaat."
   },
   {
     id: "informatiewinkel",
