@@ -1,5 +1,5 @@
 // Shootlist app logic
-const STORAGE_KEY = "shootlist_state_v1";
+const STORAGE_KEY = "shootlist_state_v2_deopening";
 
 const state = loadState();
 
@@ -141,7 +141,7 @@ function earliestSortKey(act, dayFilter) {
   if (slots.length === 0) return [9, 9999];
   let best = [9, 9999];
   for (const s of slots) {
-    const dayOrder = s.day === "wo" ? 0 : s.day === "do" ? 1 : 2;
+    const dayOrder = s.day === "vr" ? 0 : s.day === "za" ? 1 : s.day === "zo" ? 2 : 3;
     const mins = parseFirstTimeMinutes(s.time);
     if (dayOrder < best[0] || (dayOrder === best[0] && mins < best[1])) {
       best = [dayOrder, mins];
@@ -291,8 +291,9 @@ function renderActCard(act) {
 }
 
 function dayLabel(d) {
-  if (d === "wo") return "Wo 13 mei";
-  if (d === "do") return "Do 14 mei";
+  if (d === "vr") return "Vr 28 aug";
+  if (d === "za") return "Za 29 aug";
+  if (d === "zo") return "Zo 30 aug";
   return d;
 }
 

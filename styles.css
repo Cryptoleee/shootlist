@@ -267,7 +267,8 @@ body {
   border-radius: 50%;
   background: var(--green);
 }
-.day-dot.do { background: var(--amber); }
+.day-dot.za { background: var(--amber); }
+.day-dot.zo { background: #d6479c; }
 
 .priority-badge {
   font-size: 10px;
