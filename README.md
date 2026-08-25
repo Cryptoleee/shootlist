@@ -15,8 +15,15 @@ Interactieve mobiele shooting list voor meerdere klussen. Start op een openingss
 - State wordt opgeslagen in localStorage van je telefoon
 - Plattegrond en timetable als reference tabs
 
+## Sync tussen telefoons
+De app synct vinkjes, notities, crew en toewijzingen tussen iedereen die de link gebruikt, via `api/state.js` (Vercel serverless) + Upstash Redis.
+
+**Eenmalige setup:** Vercel-dashboard → project *shootlist* → **Storage** → **Create Database** → *Upstash Redis* (gratis tier) → koppel aan het project → redeploy. Daarna toont de app "☁️ synct" in de balk. Zonder database staat er "alleen dit toestel" en werkt alles lokaal zoals voorheen.
+
+Merge-strategie: elke wijziging heeft een timestamp; per item wint de nieuwste (uitvinken en crew-verwijderen zijn tombstones, dus dat synct ook). Filters en sortering blijven per telefoon. Let op: iedereen met de link kan meekijken én afvinken — er is bewust geen login.
+
 ## Stack
-Pure HTML / CSS / JS — geen build step. Deployt direct als static site naar Vercel.
+Pure HTML / CSS / JS — geen build step. Deployt direct als static site naar Vercel, plus één serverless functie (`api/state.js`) voor sync.
 
 ## Lokaal testen
 ```

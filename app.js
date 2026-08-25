@@ -7,33 +7,62 @@ let state = null;   // state van actieve klus
 
 function storageKeyFor(p) { return `shootlist_state_${p.stateKey}`; }
 
+function nowIso() { return new Date().toISOString(); }
+
+// Elke sync-bare waarde is een entry { v, t }: waarde + timestamp.
+// Zo kunnen twee telefoons veilig samengevoegd worden (nieuwste wint),
+// en blijft "uitgevinkt" bewaard als tombstone i.p.v. te verdwijnen.
+function entryVal(map, key) {
+  const e = map ? map[key] : null;
+  return e && typeof e === "object" ? e.v : undefined;
+}
+function setEntry(map, key, v) {
+  map[key] = { v, t: nowIso() };
+}
+
+// Migratie van oud formaat (kale waarden) naar entry-formaat
+function normalizeState(s) {
+  if (!s.filters) s.filters = {};
+  if (!s.filters.day) s.filters.day = "all";
+  if (!s.filters.status) s.filters.status = "all";
+  if (!s.filters.priorities) s.filters.priorities = [];
+  if (!s.filters.sort) s.filters.sort = "time";
+  if (!s.filters.who) s.filters.who = "all";
+  if (!s.slots) s.slots = {};
+  if (!s.notes) s.notes = {};
+  if (!s.assign) s.assign = {};
+  if (!s.crew) s.crew = [];
+  if (!s.crewRemoved) s.crewRemoved = {};
+  for (const k of Object.keys(s.slots)) {
+    if (typeof s.slots[k] === "string") s.slots[k] = { v: 1, t: s.slots[k] };
+  }
+  for (const k of Object.keys(s.notes)) {
+    if (typeof s.notes[k] === "string") s.notes[k] = { v: s.notes[k], t: "" };
+  }
+  for (const k of Object.keys(s.assign)) {
+    if (typeof s.assign[k] === "string") s.assign[k] = { v: s.assign[k], t: "" };
+  }
+  for (const m of s.crew) { if (!m.t) m.t = ""; }
+  return s;
+}
+
 function loadState(p) {
   try {
     const raw = localStorage.getItem(storageKeyFor(p));
-    if (raw) {
-      const s = JSON.parse(raw);
-      if (!s.filters) s.filters = {};
-      if (!s.filters.day) s.filters.day = "all";
-      if (!s.filters.status) s.filters.status = "all";
-      if (!s.filters.priorities) s.filters.priorities = [];
-      if (!s.filters.sort) s.filters.sort = "time";
-      if (!s.filters.who) s.filters.who = "all";
-      if (!s.slots) s.slots = {};
-      if (!s.notes) s.notes = {};
-      if (!s.assign) s.assign = {};
-      if (!s.crew) s.crew = [];
-      return s;
-    }
+    if (raw) return normalizeState(JSON.parse(raw));
   } catch (e) {}
-  return { slots: {}, notes: {}, assign: {}, crew: [], filters: { day: "all", status: "all", priorities: [], sort: "time", who: "all" } };
+  return normalizeState({});
 }
 function saveState() {
   if (!project || !state) return;
   localStorage.setItem(storageKeyFor(project), JSON.stringify(state));
+  schedulePush();
 }
 
 function slotKey(actId, idx) { return `${actId}::${idx}`; }
-function isSlotDone(s, actId, idx) { return !!s.slots[slotKey(actId, idx)]; }
+function isSlotDone(s, actId, idx) { return !!entryVal(s.slots, slotKey(actId, idx)); }
+function noteText(actId) { return entryVal(state.notes, actId) || ""; }
+function assignedId(s, actId) { return entryVal(s.assign, actId) || null; }
 
 function isActDoneIn(p, s, act) {
   // "any": act = done zodra >=1 slot is afgevinkt (snippet voldoende)
@@ -62,12 +91,11 @@ function crewList() {
 function crewOf(act) {
   const list = crewList();
   if (list.length === 0) return null;
-  const id = state.assign[act.id];
+  const id = assignedId(state, act.id);
   return id ? list.find(c => c.id === id) || null : null;
 }
 function setAssign(actId, crewId) {
-  if (crewId) state.assign[actId] = crewId;
-  else delete state.assign[actId];
+  setEntry(state.assign, actId, crewId || null);
   saveState();
   render();
 }
@@ -80,7 +108,8 @@ function addCrewMember(name) {
     id: "c_" + Date.now().toString(36),
     name,
     color: palette.color,
-    soft: palette.soft
+    soft: palette.soft,
+    t: nowIso()
   };
   state.crew.push(member);
   saveState();
@@ -91,9 +120,10 @@ function addCrewMember(name) {
 }
 function removeCrewMember(id) {
   state.crew = state.crew.filter(c => c.id !== id);
+  state.crewRemoved[id] = nowIso(); // tombstone, zodat verwijderen ook synct
   // toewijzingen aan dit crewlid opheffen
   for (const actId of Object.keys(state.assign)) {
-    if (state.assign[actId] === id) delete state.assign[actId];
+    if (assignedId(state, actId) === id) setEntry(state.assign, actId, null);
   }
   if (state.filters.who === id) state.filters.who = "all";
   saveState();
@@ -132,8 +162,7 @@ function isActPast(act) {
 
 function toggleSlot(actId, idx) {
   const k = slotKey(actId, idx);
-  if (state.slots[k]) delete state.slots[k];
-  else state.slots[k] = new Date().toISOString();
+  setEntry(state.slots, k, entryVal(state.slots, k) ? 0 : 1);
   saveState();
   render();
 }
@@ -142,13 +171,13 @@ function toggleAct(act) {
   const done = isActDone(act);
   if (done) {
     // clear alle slots
-    act.slots.forEach((_, i) => { delete state.slots[slotKey(act.id, i)]; });
+    act.slots.forEach((_, i) => { setEntry(state.slots, slotKey(act.id, i), 0); });
   } else if (project.doneMode === "all") {
     // markeer alle slots als done
-    act.slots.forEach((_, i) => { state.slots[slotKey(act.id, i)] = new Date().toISOString(); });
+    act.slots.forEach((_, i) => { setEntry(state.slots, slotKey(act.id, i), 1); });
   } else {
     // markeer eerste slot als done
-    state.slots[slotKey(act.id, 0)] = new Date().toISOString();
+    setEntry(state.slots, slotKey(act.id, 0), 1);
   }
   saveState();
   render();
@@ -158,6 +187,7 @@ function toggleAct(act) {
 function showHome() {
   project = null;
   state = null;
+  stopSync();
   document.body.classList.add("home-mode");
   document.getElementById("appTitle").textContent = "Shootlist";
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -209,6 +239,7 @@ function openProject(id) {
   // altijd starten op de lijst-tab
   activateTab("list");
   render();
+  startSync();
   window.scrollTo(0, 0);
 }
 
@@ -408,7 +439,7 @@ function filterActs() {
     if (state.filters.status === "todo" && isActDone(act)) return false;
     if (state.filters.status === "done" && !isActDone(act)) return false;
     if (crewList().length > 0 && state.filters.who !== "all") {
-      const assigned = state.assign[act.id] || null;
+      const assigned = assignedId(state, act.id);
       if (state.filters.who === "none") { if (assigned) return false; }
       else if (assigned !== state.filters.who) return false;
     }
@@ -507,7 +538,7 @@ function renderActCard(act) {
       </div>
     </div>
     <div class="slots"></div>
-    ${state.notes[act.id] ? `<div class="note-preview">📝 ${escapeHtml(state.notes[act.id])}</div>` : ""}
+    ${noteText(act.id) ? `<div class="note-preview">📝 ${escapeHtml(noteText(act.id))}</div>` : ""}
     ${act.note ? `<div class="note-extra">ℹ️ ${escapeHtml(act.note)}</div>` : ""}
     <div class="act-actions">
       <button data-details="${act.id}">Notities / details</button>
@@ -604,7 +635,7 @@ function openModal(act) {
   // toewijzen aan crewlid
   const assignEl = document.getElementById("modalAssign");
   {
-    const current = state.assign[act.id] || null;
+    const current = assignedId(state, act.id);
     const customIds = state.crew.map(c => c.id);
     assignEl.style.display = "";
     assignEl.innerHTML = "<label class='notes-label'>Toewijzen aan</label>";
@@ -657,7 +688,7 @@ function openModal(act) {
     row.appendChild(addBtn);
     assignEl.appendChild(row);
   }
-  document.getElementById("modalNotes").value = state.notes[act.id] || "";
+  document.getElementById("modalNotes").value = noteText(act.id);
   document.getElementById("modal").classList.remove("hidden");
 }
 function closeModal() {
@@ -671,8 +702,7 @@ document.getElementById("modal").addEventListener("click", (e) => {
 document.getElementById("modalSave").addEventListener("click", () => {
   if (!currentActId) return;
   const txt = document.getElementById("modalNotes").value.trim();
-  if (txt) state.notes[currentActId] = txt;
-  else delete state.notes[currentActId];
+  if (txt !== noteText(currentActId)) setEntry(state.notes, currentActId, txt);
   saveState();
   render();
   closeModal();
@@ -689,9 +719,10 @@ document.getElementById("backBtn").addEventListener("click", showHome);
 // ---- Reset (alleen actieve klus) ----
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (!project) return;
-  if (!confirm(`Alle vinkjes en notities van "${project.name}" resetten?`)) return;
-  state.slots = {};
-  state.notes = {};
+  if (!confirm(`Alle vinkjes en notities van "${project.name}" resetten? (Dit synct ook naar andere telefoons.)`)) return;
+  // tombstones i.p.v. leegmaken, anders komt de oude staat via sync terug
+  for (const k of Object.keys(state.slots)) setEntry(state.slots, k, 0);
+  for (const k of Object.keys(state.notes)) setEntry(state.notes, k, "");
   saveState();
   render();
 });
@@ -701,6 +732,144 @@ document.querySelectorAll(".zoom-img").forEach(img => {
   img.addEventListener("click", () => {
     img.classList.toggle("zoomed");
   });
+});
+
+// ---- Sync tussen telefoons (via /api/state) ----
+// Zonder gekoppelde database antwoordt de API {sync:false} en blijft
+// alles gewoon lokaal werken. Met database: pull elke 10s + push (met
+// debounce) na elke wijziging. Merge: nieuwste timestamp per item wint.
+let syncAvailable = null; // null = onbekend, true/false
+let pullTimer = null;
+let pushTimer = null;
+
+function pickSyncFields(s) {
+  return {
+    slots: s.slots || {},
+    notes: s.notes || {},
+    assign: s.assign || {},
+    crew: s.crew || [],
+    crewRemoved: s.crewRemoved || {}
+  };
+}
+function mergeEntryMaps(a, b) {
+  const out = { ...(a || {}) };
+  for (const k of Object.keys(b || {})) {
+    const ea = out[k], eb = b[k];
+    if (!ea || String(eb.t || "") > String(ea.t || "")) out[k] = eb;
+  }
+  return out;
+}
+function mergeStates(local, remote) {
+  if (!remote) return local;
+  if (!local) return remote;
+  const tombs = { ...(local.crewRemoved || {}) };
+  for (const [id, t] of Object.entries(remote.crewRemoved || {})) {
+    if (!tombs[id] || String(t) > String(tombs[id])) tombs[id] = t;
+  }
+  const crewMap = {};
+  for (const m of [...(local.crew || []), ...(remote.crew || [])]) {
+    const ex = crewMap[m.id];
+    if (!ex || String(m.t || "") > String(ex.t || "")) crewMap[m.id] = m;
+  }
+  return {
+    slots: mergeEntryMaps(local.slots, remote.slots),
+    notes: mergeEntryMaps(local.notes, remote.notes),
+    assign: mergeEntryMaps(local.assign, remote.assign),
+    crewRemoved: tombs,
+    crew: Object.values(crewMap)
+      .filter(m => !(tombs[m.id] && String(tombs[m.id]) > String(m.t || "")))
+      .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+  };
+}
+
+// stabiele JSON (gesorteerde keys) zodat vergelijken niet op
+// key-volgorde struikelt en de push-lus netjes stopt
+function stableStringify(x) {
+  if (Array.isArray(x)) return "[" + x.map(stableStringify).join(",") + "]";
+  if (x && typeof x === "object") {
+    return "{" + Object.keys(x).sort().map(k => JSON.stringify(k) + ":" + stableStringify(x[k])).join(",") + "}";
+  }
+  return JSON.stringify(x);
+}
+
+function setSyncStatus(v) {
+  if (syncAvailable === v) return;
+  syncAvailable = v;
+  renderSyncBadge();
+}
+function renderSyncBadge() {
+  const el = document.getElementById("syncBadge");
+  if (!el) return;
+  if (!project) { el.textContent = ""; el.className = "sync-badge"; return; }
+  if (syncAvailable === true) { el.textContent = "☁️ synct"; el.className = "sync-badge on"; }
+  else if (syncAvailable === false) { el.textContent = "alleen dit toestel"; el.className = "sync-badge off"; }
+  else { el.textContent = ""; el.className = "sync-badge"; }
+}
+
+// merged-server-staat overnemen; als lokaal nieuwer is → terugpushen
+function adoptMerged(remote) {
+  if (!project || !state) return;
+  const local = pickSyncFields(state);
+  const combined = mergeStates(local, remote);
+  const combinedJson = stableStringify(combined);
+  if (combinedJson !== stableStringify(local)) {
+    Object.assign(state, combined);
+    localStorage.setItem(storageKeyFor(project), JSON.stringify(state));
+    buildWhoChips();
+    restoreFilterUI();
+    render();
+  }
+  // lokaal iets dat de server nog niet heeft → terugpushen
+  if (!remote || combinedJson !== stableStringify(mergeStates(remote, remote))) {
+    schedulePush();
+  }
+}
+
+function schedulePush() {
+  if (!project || syncAvailable === false) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushState, 800);
+}
+async function pushState() {
+  if (!project || !state) return;
+  const p = project;
+  try {
+    const r = await fetch(`/api/state?project=${encodeURIComponent(p.id)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state: pickSyncFields(state) })
+    });
+    const j = await r.json();
+    if (project !== p) return; // ondertussen andere klus geopend
+    if (!j.sync) { setSyncStatus(false); return; }
+    setSyncStatus(true);
+    adoptMerged(j.state);
+  } catch (e) { /* offline of geen API — stil laten */ }
+}
+async function pullState() {
+  if (!project) return;
+  const p = project;
+  try {
+    const r = await fetch(`/api/state?project=${encodeURIComponent(p.id)}`);
+    const j = await r.json();
+    if (project !== p) return;
+    if (!j.sync) { setSyncStatus(false); return; }
+    setSyncStatus(true);
+    adoptMerged(j.state);
+  } catch (e) { /* offline — stil laten */ }
+}
+function startSync() {
+  stopSync();
+  pullState();
+  pullTimer = setInterval(pullState, 10_000);
+}
+function stopSync() {
+  clearInterval(pullTimer);
+  clearTimeout(pushTimer);
+  renderSyncBadge();
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && project) pullState();
 });
 
 // ---- Init ----
