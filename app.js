@@ -107,7 +107,19 @@ function crewOf(act) {
 function setAssign(actId, crewId) {
   setEntry(state.assign, actId, crewId || null);
   saveState();
+  buildWhoChips();
+  restoreFilterUI();
   render();
+}
+
+// crewleden die daadwerkelijk iets toegewezen hebben
+function assignedCrewIds() {
+  const ids = new Set();
+  for (const k of Object.keys(state.assign)) {
+    const v = entryVal(state.assign, k);
+    if (v) ids.add(v);
+  }
+  return ids;
 }
 function addCrewMember(name) {
   name = String(name || "").trim();
@@ -252,6 +264,9 @@ function openProject(id) {
   buildWhoChips();
   buildTabs();
   restoreFilterUI();
+  // filterpaneel dicht bij openen van een klus
+  document.getElementById("filterPanel").classList.remove("open");
+  document.getElementById("filterToggle").classList.remove("open");
 
   // altijd starten op de lijst-tab
   activateTab("list");
@@ -333,7 +348,9 @@ function buildDayChips() {
 function buildWhoChips() {
   const row = document.getElementById("whoRow");
   row.innerHTML = "";
-  const list = crewList();
+  // alleen crewleden tonen die iets toegewezen hebben — de rest is ruis
+  const active = assignedCrewIds();
+  const list = crewList().filter(c => active.has(c.id));
   if (list.length === 0) {
     row.style.display = "none";
     state.filters.who = "all";
@@ -342,7 +359,7 @@ function buildWhoChips() {
   row.style.display = "";
   const label = document.createElement("span");
   label.className = "sort-label";
-  label.textContent = "Voor:";
+  label.textContent = "Voor";
   row.appendChild(label);
   const mk = (who, text, color) => {
     const btn = document.createElement("button");
@@ -410,8 +427,8 @@ function restoreFilterUI() {
   dayRow.querySelectorAll(".chip").forEach(b => {
     b.classList.toggle("active", b.dataset.day === state.filters.day);
   });
-  // reset wie-filter als crewlid niet meer bestaat
-  const validWho = ["all", "none", ...crewList().map(c => c.id)];
+  // reset wie-filter als crewlid niet meer bestaat of niets toegewezen heeft
+  const validWho = ["all", "none", ...[...assignedCrewIds()]];
   if (!validWho.includes(state.filters.who)) state.filters.who = "all";
   document.querySelectorAll("#whoRow .chip").forEach(b => {
     b.classList.toggle("active", b.dataset.who === state.filters.who);
@@ -501,11 +518,30 @@ function filterActs() {
   });
 }
 
+// ---- Filterpaneel (inklapbaar) ----
+function updateFilterBadge() {
+  const el = document.getElementById("filterCount");
+  if (!el || !state) return;
+  const n =
+    (state.filters.status !== "all" ? 1 : 0) +
+    state.filters.priorities.length +
+    (state.filters.who !== "all" ? 1 : 0) +
+    (state.filters.sort !== "time" ? 1 : 0);
+  el.textContent = n;
+  el.classList.toggle("hidden", n === 0);
+}
+document.getElementById("filterToggle").addEventListener("click", () => {
+  const panel = document.getElementById("filterPanel");
+  const open = panel.classList.toggle("open");
+  document.getElementById("filterToggle").classList.toggle("open", open);
+});
+
 // ---- Render ----
 function render() {
   if (!project) return renderHome();
   renderProgress();
   renderList();
+  updateFilterBadge();
 }
 
 function renderProgress() {
@@ -553,7 +589,7 @@ function renderActCard(act) {
   const days = [...new Set(slotsToShow.map(s => s.day))];
 
   card.innerHTML = `
-    ${crew ? `<div class="assign-strip" style="background:${crew.color}; color:${textOn(crew.color)}">🎥 ${escapeHtml(crew.name)}</div>` : ""}
+    ${crew ? `<div class="assign-strip" style="background:${crew.color}; color:${textOn(crew.color)}">${escapeHtml(crew.name)}</div>` : ""}
     <div class="act-header">
       <div class="act-check ${done ? "checked" : ""}${lastPop === `act:${act.id}` ? " pop" : ""}" data-toggle="${act.id}">✓</div>
       <div class="act-info" data-open-act>
