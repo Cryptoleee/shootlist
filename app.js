@@ -17,12 +17,14 @@ function loadState(p) {
       if (!s.filters.status) s.filters.status = "all";
       if (!s.filters.priorities) s.filters.priorities = [];
       if (!s.filters.sort) s.filters.sort = "time";
+      if (!s.filters.who) s.filters.who = "all";
       if (!s.slots) s.slots = {};
       if (!s.notes) s.notes = {};
+      if (!s.assign) s.assign = {};
       return s;
     }
   } catch (e) {}
-  return { slots: {}, notes: {}, filters: { day: "all", status: "all", priorities: [], sort: "time" } };
+  return { slots: {}, notes: {}, assign: {}, filters: { day: "all", status: "all", priorities: [], sort: "time", who: "all" } };
 }
 function saveState() {
   if (!project || !state) return;
@@ -40,6 +42,19 @@ function isActDoneIn(p, s, act) {
   return act.slots.some((_, i) => isSlotDone(s, act.id, i));
 }
 function isActDone(act) { return isActDoneIn(project, state, act); }
+
+// ---- Toewijzing (crew) ----
+function crewOf(act) {
+  if (!project.crew) return null;
+  const id = state.assign[act.id];
+  return id ? project.crew.find(c => c.id === id) || null : null;
+}
+function setAssign(actId, crewId) {
+  if (crewId) state.assign[actId] = crewId;
+  else delete state.assign[actId];
+  saveState();
+  render();
+}
 
 // ---- "Voorbij" detectie ----
 // Pakt het laatste HH:MM in de tijd-string als eindtijd.
@@ -141,6 +156,7 @@ function openProject(id) {
   document.getElementById("appTitle").textContent = p.name;
 
   buildDayChips();
+  buildWhoChips();
   buildTabs();
   restoreFilterUI();
 
@@ -212,6 +228,39 @@ function buildDayChips() {
   project.days.forEach(d => mk(d.key, d.label));
 }
 
+function buildWhoChips() {
+  const row = document.getElementById("whoRow");
+  row.innerHTML = "";
+  if (!project.crew || project.crew.length === 0) {
+    row.style.display = "none";
+    state.filters.who = "all";
+    return;
+  }
+  row.style.display = "";
+  const label = document.createElement("span");
+  label.className = "sort-label";
+  label.textContent = "Voor:";
+  row.appendChild(label);
+  const mk = (who, text, color) => {
+    const btn = document.createElement("button");
+    btn.className = "chip sort";
+    btn.dataset.who = who;
+    btn.textContent = text;
+    if (color) btn.style.setProperty("--crew-color", color);
+    btn.addEventListener("click", () => {
+      row.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.filters.who = who;
+      saveState();
+      render();
+    });
+    row.appendChild(btn);
+  };
+  mk("all", "Iedereen");
+  project.crew.forEach(c => mk(c.id, c.name, c.color));
+  mk("none", "Niet toegewezen");
+}
+
 function setupStaticFilters() {
   document.querySelectorAll(".filters .chip[data-status]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -254,6 +303,12 @@ function restoreFilterUI() {
   }
   dayRow.querySelectorAll(".chip").forEach(b => {
     b.classList.toggle("active", b.dataset.day === state.filters.day);
+  });
+  // reset wie-filter als crewlid niet meer bestaat
+  const validWho = ["all", "none", ...(project.crew || []).map(c => c.id)];
+  if (!validWho.includes(state.filters.who)) state.filters.who = "all";
+  document.querySelectorAll("#whoRow .chip").forEach(b => {
+    b.classList.toggle("active", b.dataset.who === state.filters.who);
   });
   document.querySelectorAll(".filters .chip[data-status]").forEach(b => {
     b.classList.toggle("active", b.dataset.status === state.filters.status);
@@ -305,6 +360,11 @@ function filterActs() {
     }
     if (state.filters.status === "todo" && isActDone(act)) return false;
     if (state.filters.status === "done" && !isActDone(act)) return false;
+    if (project.crew && state.filters.who !== "all") {
+      const assigned = state.assign[act.id] || null;
+      if (state.filters.who === "none") { if (assigned) return false; }
+      else if (assigned !== state.filters.who) return false;
+    }
     return true;
   }).sort((a, b) => {
     // gedane én voorbije acts altijd onderaan
@@ -367,8 +427,13 @@ function renderActCard(act) {
   const done = isActDone(act);
   const past = !done && isActPast(act);
   const multiDay = project.days.length > 1;
+  const crew = crewOf(act);
   const card = document.createElement("div");
-  card.className = "act-card" + (done ? " done" : "") + (past ? " past" : "");
+  card.className = "act-card" + (done ? " done" : "") + (past ? " past" : "") + (crew ? " assigned" : "");
+  if (crew) {
+    card.style.background = crew.soft;
+    card.style.borderColor = crew.color;
+  }
 
   const slotsForDay = state.filters.day === "all"
     ? act.slots
@@ -379,6 +444,7 @@ function renderActCard(act) {
   const days = [...new Set(slotsToShow.map(s => s.day))];
 
   card.innerHTML = `
+    ${crew ? `<div class="assign-strip" style="background:${crew.color}">🎥 ${escapeHtml(crew.name)}</div>` : ""}
     <div class="act-header">
       <div class="act-check ${done ? "checked" : ""}" data-toggle="${act.id}">✓</div>
       <div class="act-info" data-open-act>
@@ -488,6 +554,36 @@ function openModal(act) {
     });
     slotsEl.appendChild(row);
   });
+  // toewijzen aan crewlid
+  const assignEl = document.getElementById("modalAssign");
+  if (project.crew && project.crew.length > 0) {
+    const current = state.assign[act.id] || null;
+    assignEl.style.display = "";
+    assignEl.innerHTML = "<label class='notes-label'>Toewijzen aan</label>";
+    const row = document.createElement("div");
+    row.className = "assign-row";
+    const mkBtn = (id, text, color) => {
+      const btn = document.createElement("button");
+      btn.className = "chip assign-chip" + ((id === current) || (!id && !current) ? " active" : "");
+      btn.textContent = text;
+      if (color && ((id === current))) {
+        btn.style.background = color;
+        btn.style.borderColor = color;
+        btn.style.color = "#fff";
+      }
+      btn.addEventListener("click", () => {
+        setAssign(act.id, id === current ? null : id);
+        openModal(act); // refresh modal
+      });
+      row.appendChild(btn);
+    };
+    mkBtn(null, "Niemand");
+    project.crew.forEach(c => mkBtn(c.id, c.name, c.color));
+    assignEl.appendChild(row);
+  } else {
+    assignEl.style.display = "none";
+    assignEl.innerHTML = "";
+  }
   document.getElementById("modalNotes").value = state.notes[act.id] || "";
   document.getElementById("modal").classList.remove("hidden");
 }
