@@ -76,13 +76,23 @@ function isActDone(act) { return isActDoneIn(project, state, act); }
 // ---- Toewijzing (crew) ----
 // Kleuren voor in de app toegevoegde crewleden (eerste vrije wordt gepakt)
 const CREW_COLORS = [
-  { color: "#7c3aed", soft: "#efe9fb" },
-  { color: "#d97706", soft: "#fbf0dd" },
-  { color: "#0d9488", soft: "#e0f2f0" },
-  { color: "#c0392b", soft: "#f9e5e2" },
-  { color: "#d6479c", soft: "#fae3f0" },
-  { color: "#475569", soft: "#e8ecf1" }
+  { color: "#a78bfa", soft: "" },
+  { color: "#ff9f43", soft: "" },
+  { color: "#2dd4bf", soft: "" },
+  { color: "#ff6b6b", soft: "" },
+  { color: "#ff7ac6", soft: "" },
+  { color: "#94a3b8", soft: "" }
 ];
+
+// tekstkleur (licht/donker) die leesbaar is óp een crew-kleur
+function textOn(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+  if (!m) return "#101010";
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 140 ? "#101010" : "#ffffff";
+}
 
 function crewList() {
   // vaste crew uit data.js + in de app toegevoegde crewleden
@@ -160,9 +170,14 @@ function isActPast(act) {
   return act.slots.length > 0 && act.slots.every(isSlotPast);
 }
 
+// welke check net is aangetikt → krijgt een pop-animatie na re-render
+let lastPop = null;
+
 function toggleSlot(actId, idx) {
   const k = slotKey(actId, idx);
-  setEntry(state.slots, k, entryVal(state.slots, k) ? 0 : 1);
+  const nowOn = !entryVal(state.slots, k);
+  setEntry(state.slots, k, nowOn ? 1 : 0);
+  if (nowOn) lastPop = `slot:${k}`;
   saveState();
   render();
 }
@@ -179,6 +194,7 @@ function toggleAct(act) {
     // markeer eerste slot als done
     setEntry(state.slots, slotKey(act.id, 0), 1);
   }
+  if (!done) lastPop = `act:${act.id}`;
   saveState();
   render();
 }
@@ -206,6 +222,7 @@ function renderHome() {
     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
     const card = document.createElement("div");
     card.className = "project-card";
+    card.style.setProperty("--i", Math.min(container.children.length, 8));
     card.innerHTML = `
       <div class="project-icon">${p.icon || "🎬"}</div>
       <div class="project-info">
@@ -290,9 +307,16 @@ function buildDayChips() {
   row.style.display = "";
   const mk = (key, label) => {
     const btn = document.createElement("button");
-    btn.className = "chip";
     btn.dataset.day = key;
-    btn.textContent = label;
+    // "Vr 28 aug" → date-pill met dagdeel boven en nummer eronder
+    const m = /^(\S{2,3})\s+(\d{1,2})/.exec(label);
+    if (m) {
+      btn.className = "chip day-pill";
+      btn.innerHTML = `<span class="dp-top">${escapeHtml(m[1])}</span><span class="dp-num">${escapeHtml(m[2])}</span>`;
+    } else {
+      btn.className = "chip";
+      btn.textContent = label;
+    }
     btn.addEventListener("click", () => {
       row.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
@@ -325,7 +349,10 @@ function buildWhoChips() {
     btn.className = "chip sort";
     btn.dataset.who = who;
     btn.textContent = text;
-    if (color) btn.style.setProperty("--crew-color", color);
+    if (color) {
+      btn.style.setProperty("--crew-color", color);
+      btn.style.setProperty("--crew-text", textOn(color));
+    }
     btn.addEventListener("click", () => {
       row.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
@@ -497,9 +524,12 @@ function renderList() {
     container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--muted);">Geen acts in deze filter.</div>`;
     return;
   }
-  for (const act of acts) {
-    container.appendChild(renderActCard(act));
-  }
+  acts.forEach((act, i) => {
+    const card = renderActCard(act);
+    card.style.setProperty("--i", Math.min(i, 8));
+    container.appendChild(card);
+  });
+  lastPop = null;
 }
 
 function renderActCard(act) {
@@ -510,8 +540,8 @@ function renderActCard(act) {
   const card = document.createElement("div");
   card.className = "act-card" + (done ? " done" : "") + (past ? " past" : "") + (crew ? " assigned" : "");
   if (crew) {
-    card.style.background = crew.soft;
-    card.style.borderColor = crew.color;
+    card.style.background = `color-mix(in srgb, ${crew.color} 12%, var(--card))`;
+    card.style.borderColor = `color-mix(in srgb, ${crew.color} 55%, var(--line))`;
   }
 
   const slotsForDay = state.filters.day === "all"
@@ -523,9 +553,9 @@ function renderActCard(act) {
   const days = [...new Set(slotsToShow.map(s => s.day))];
 
   card.innerHTML = `
-    ${crew ? `<div class="assign-strip" style="background:${crew.color}">🎥 ${escapeHtml(crew.name)}</div>` : ""}
+    ${crew ? `<div class="assign-strip" style="background:${crew.color}; color:${textOn(crew.color)}">🎥 ${escapeHtml(crew.name)}</div>` : ""}
     <div class="act-header">
-      <div class="act-check ${done ? "checked" : ""}" data-toggle="${act.id}">✓</div>
+      <div class="act-check ${done ? "checked" : ""}${lastPop === `act:${act.id}` ? " pop" : ""}" data-toggle="${act.id}">✓</div>
       <div class="act-info" data-open-act>
         <h3 class="act-title">${escapeHtml(act.name)}${
           act.priority === "conditional"
@@ -555,7 +585,7 @@ function renderActCard(act) {
     const sEl = document.createElement("div");
     sEl.className = "slot" + (sDone ? " captured" : "") + (sPast ? " past" : "");
     sEl.innerHTML = `
-      <div class="slot-check ${sDone ? "checked" : ""}" data-slot="${act.id}|${idx}">✓</div>
+      <div class="slot-check ${sDone ? "checked" : ""}${lastPop === `slot:${slotKey(act.id, idx)}` ? " pop" : ""}" data-slot="${act.id}|${idx}">✓</div>
       ${multiDay ? `<span class="day-dot ${slot.day}"></span>` : ""}
       <span class="slot-time">${escapeHtml(slot.time)}</span>
       ${multiDay ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
@@ -649,7 +679,7 @@ function openModal(act) {
       if (color && id === current) {
         btn.style.background = color;
         btn.style.borderColor = color;
-        btn.style.color = "#fff";
+        btn.style.color = textOn(color);
       }
       btn.addEventListener("click", () => {
         setAssign(act.id, id === current ? null : id);
