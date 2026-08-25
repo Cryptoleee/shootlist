@@ -264,7 +264,8 @@ function buildTabs() {
     el.innerHTML = `<h3>${escapeHtml(project.info.title)}</h3>` + project.info.groups.map(g => `
       <div class="info-group">
         <div class="info-group-label">${escapeHtml(g.label)}</div>
-        <div class="info-names">${g.names.map(n => `<span class="name-chip">${escapeHtml(n)}</span>`).join("")}</div>
+        ${g.names ? `<div class="info-names">${g.names.map(n => `<span class="name-chip">${escapeHtml(n)}</span>`).join("")}</div>` : ""}
+        ${g.text ? `<div class="info-text">${escapeHtml(g.text)}</div>` : ""}
       </div>
     `).join("");
   }

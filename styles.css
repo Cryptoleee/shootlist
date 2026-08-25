@@ -237,6 +237,16 @@ body.home-mode .back-btn { display: none; }
   font-size: 13px;
   font-weight: 600;
 }
+.info-text {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  white-space: pre-line;
+  color: var(--ink);
+}
 
 /* Filters */
 .filters {
