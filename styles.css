@@ -465,16 +465,15 @@ body.home-mode .back-btn { display: none; }
   flex-wrap: wrap;
   align-items: center;
 }
-.day-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--volt);
+.meta-days {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
-.day-dot.vr { background: var(--green); }
-.day-dot.za { background: var(--amber); }
-.day-dot.zo { background: var(--pink); }
+.meta-loc { color: var(--muted); }
 
 .priority-badge {
   font-size: 9px;

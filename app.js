@@ -563,14 +563,14 @@ function renderActCard(act) {
             : ""
         }${past ? `<span class="priority-badge past-badge">Voorbij</span>` : ""}</h3>
         <div class="act-meta">
-          ${multiDay ? days.map(d => `<span><span class="day-dot ${d}"></span> ${dayLabel(d)}</span>`).join("") : ""}
-          <span>📍 ${escapeHtml(act.location)}</span>
+          ${multiDay ? `<span class="meta-days">${days.map(d => dayLabel(d)).join(" · ")}</span>` : ""}
+          <span class="meta-loc">${escapeHtml(act.location)}</span>
         </div>
       </div>
     </div>
     <div class="slots"></div>
-    ${noteText(act.id) ? `<div class="note-preview">📝 ${escapeHtml(noteText(act.id))}</div>` : ""}
-    ${act.note ? `<div class="note-extra">ℹ️ ${escapeHtml(act.note)}</div>` : ""}
+    ${noteText(act.id) ? `<div class="note-preview">${escapeHtml(noteText(act.id))}</div>` : ""}
+    ${act.note ? `<div class="note-extra">${escapeHtml(act.note)}</div>` : ""}
     <div class="act-actions">
       <button data-details="${act.id}">Notities / details</button>
     </div>
@@ -586,7 +586,6 @@ function renderActCard(act) {
     sEl.className = "slot" + (sDone ? " captured" : "") + (sPast ? " past" : "");
     sEl.innerHTML = `
       <div class="slot-check ${sDone ? "checked" : ""}${lastPop === `slot:${slotKey(act.id, idx)}` ? " pop" : ""}" data-slot="${act.id}|${idx}">✓</div>
-      ${multiDay ? `<span class="day-dot ${slot.day}"></span>` : ""}
       <span class="slot-time">${escapeHtml(slot.time)}</span>
       ${multiDay ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
     `;
@@ -638,7 +637,7 @@ function openModal(act) {
   }
   const days = [...new Set(act.slots.map(s => s.day))];
   document.getElementById("modalMeta").innerHTML = `
-    📍 ${escapeHtml(act.location)}<br>
+    ${escapeHtml(act.location)}<br>
     ${multiDay ? days.map(d => dayLabel(d)).join(" · ") : ""}
     ${act.note ? `<div style="margin-top:8px; padding:8px 10px; background:var(--amber-soft); border-radius:8px;">${escapeHtml(act.note)}</div>` : ""}
   `;
@@ -653,7 +652,6 @@ function openModal(act) {
     row.style.marginBottom = "6px";
     row.innerHTML = `
       <div class="slot-check ${sDone ? "checked" : ""}" data-mslot="${idx}">✓</div>
-      ${multiDay ? `<span class="day-dot ${slot.day}"></span>` : ""}
       <span class="slot-time">${escapeHtml(slot.time)}</span>
       ${multiDay ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
     `;
