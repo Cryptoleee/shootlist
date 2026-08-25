@@ -732,6 +732,12 @@ const PROJECTS = [
     icon: "🎭",
     stateKey: "v2_deopening", // behoudt bestaande vinkjes
     doneMode: "any", // festival: één goede snippet per act is genoeg
+    // Crew: acts kunnen in de app aan iemand worden toegewezen (via detail-modal).
+    // Toegewezen kaarten krijgen de kleur van het crewlid. Namen hier aanpassen.
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#0b7a3e", soft: "#e0f0e7" },
+      { id: "cam2", name: "Cameraman 2", color: "#2563b8", soft: "#e3edfb" }
+    ],
     days: [
       { key: "vr", label: "Vr 28 aug", date: "2026-08-28" },
       { key: "za", label: "Za 29 aug", date: "2026-08-29" },
@@ -761,6 +767,10 @@ const PROJECTS = [
     icon: "🏭",
     stateKey: "bedrijfsvideo_v1",
     doneMode: "all", // bedrijfsvideo: alle shots per blok moeten binnen zijn
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#0b7a3e", soft: "#e0f0e7" },
+      { id: "cam2", name: "Cameraman 2", color: "#2563b8", soft: "#e3edfb" }
+    ],
     days: [
       { key: "dag", label: "Shootdag" }
     ],

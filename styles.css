@@ -342,6 +342,34 @@ body.home-mode .back-btn { display: none; }
   align-items: flex-start;
   gap: 12px;
 }
+
+/* Toegewezen act: gekleurde naamstrip bovenaan de kaart */
+.act-card.assigned { border-width: 2px; padding-top: 0; }
+.assign-strip {
+  margin: 0 -14px 12px;
+  padding: 6px 14px;
+  border-radius: 12px 12px 0 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.act-card.assigned.done .assign-strip,
+.act-card.assigned.past .assign-strip { opacity: 0.7; }
+
+.modal-assign { margin-bottom: 16px; }
+.assign-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.assign-chip { font-size: 13px; }
+#whoRow .chip.active {
+  background: var(--crew-color, var(--ink));
+  border-color: var(--crew-color, var(--ink));
+  color: #fff;
+}
 .act-check {
   width: 28px;
   height: 28px;
