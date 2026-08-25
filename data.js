@@ -721,10 +721,170 @@ const BEDRIJFSVIDEO_INFO = {
 };
 
 // ============================================================
+// KLUS 3: Univé adviseursvideo's (LinkedIn kennisvideo's, USL)
+// Bron: PDF "Univé LinkedIn adviseursvideo's" (draaiboek wo 26 aug 2026
+// + scripts) en Google Doc met definitieve autocue-teksten.
+// 3 adviseurs × 3 onderwerpen (verzuim, cybercrime, batterijopslag),
+// ochtend kantoor USL (verzekeringswinkel), middag Your Own Studio.
+// ============================================================
+
+const UNIVE_ACTS = [
+  {
+    id: "setup-kantoor",
+    name: "Opbouw & verkenning kantoor USL",
+    priority: "normal",
+    location: "Kantoor USL — Christiaan Geurtsweg 8",
+    slots: [
+      { day: "dag", time: "08:30 – 09:00 · Locatie verkennen + apparatuur klaarzetten (Fatma, Leroy, Jeroen, Jorrit)" }
+    ]
+  },
+  {
+    id: "logo-pand",
+    name: "Opening: Univé-logo & pand",
+    priority: "high",
+    location: "Buiten — pand USL Apeldoorn",
+    slots: [
+      { day: "dag", time: "±08:45 · Shot Univé-logo voor het pand, doordraai naar de verzekeringswinkel" }
+    ],
+    note: "Dit is het openingsshot van élk script — één keer goed schieten is genoeg, herbruikbaar voor alle 9 video's."
+  },
+  {
+    id: "miranda-kantoor",
+    name: "Miranda — kantoor/winkel",
+    priority: "high",
+    location: "Kantoor USL — verzekeringswinkel",
+    slots: [
+      { day: "dag", time: "09:00 – 10:00 · Verzuim: hook in winkel (kijkt in camera) → loopt/leunt op balie → shot met Univé-signing" },
+      { day: "dag", time: "09:00 – 10:00 · Cybercrime: hook in winkel → balie → signing-shot (titel: AI-risico's)" },
+      { day: "dag", time: "09:00 – 10:00 · Batterijopslag: hook in winkel (wijst naar boven) → balie → signing-shot" }
+    ],
+    note: "Miranda aanwezig 08:45. Autocue-teksten staan in de Info-tab."
+  },
+  {
+    id: "jacqueline-kantoor",
+    name: "Jacqueline — kantoor/winkel",
+    priority: "high",
+    location: "Kantoor USL — verzekeringswinkel",
+    slots: [
+      { day: "dag", time: "10:00 – 11:00 · Verzuim: hook in winkel → balie → signing-shot" },
+      { day: "dag", time: "10:00 – 11:00 · Cybercrime: hook in winkel → balie → signing-shot (titel: AI-risico's)" },
+      { day: "dag", time: "10:00 – 11:00 · Batterijopslag: hook in winkel (wijst naar boven) → balie → signing-shot" }
+    ],
+    note: "Jacqueline aanwezig 09:45."
+  },
+  {
+    id: "wilrieke-kantoor",
+    name: "Wilrieke — kantoor/winkel",
+    priority: "high",
+    location: "Kantoor USL — verzekeringswinkel",
+    slots: [
+      { day: "dag", time: "11:00 – 12:00 · Verzuim: hook in winkel → balie → signing-shot" },
+      { day: "dag", time: "11:00 – 12:00 · Cybercrime: hook in winkel → balie → signing-shot (titel: AI-risico's)" },
+      { day: "dag", time: "11:00 – 12:00 · Batterijopslag: hook in winkel (wijst naar boven) → balie → signing-shot" }
+    ],
+    note: "Wilrieke aanwezig 10:45. Daarna 12:00 – 13:00 uitloop & lunch bij Your Own Studio."
+  },
+  {
+    id: "props-studio",
+    name: "Props klaarzetten studio (Jorrit)",
+    priority: "normal",
+    location: "Your Own Studio — Jean Monnetpark 73",
+    slots: [
+      { day: "dag", time: "10:30 – 11:30 · Props klaarzetten in de studio" }
+    ]
+  },
+  {
+    id: "miranda-studio",
+    name: "Miranda — studio",
+    priority: "high",
+    location: "Your Own Studio (witte achtergrond)",
+    slots: [
+      { day: "dag", time: "13:00 – 14:30 · Verzuim: zit op kruk/stoel → staat op + stappen → afsluiter: wijst in camera" },
+      { day: "dag", time: "13:00 – 14:30 · Cybercrime: kruk → opstaan + stappen → wijst in camera" },
+      { day: "dag", time: "13:00 – 14:30 · Batterijopslag: kruk → opstaan + stappen → wijst in camera" }
+    ],
+    note: "Witte achtergrond; grafische elementen/titels komen in post. Ruimte laten in het kader."
+  },
+  {
+    id: "wilrieke-studio",
+    name: "Wilrieke — studio",
+    priority: "high",
+    location: "Your Own Studio (witte achtergrond)",
+    slots: [
+      { day: "dag", time: "14:30 – 16:00 · Verzuim: kruk → opstaan + stappen → wijst in camera" },
+      { day: "dag", time: "14:30 – 16:00 · Cybercrime: kruk → opstaan + stappen → wijst in camera" },
+      { day: "dag", time: "14:30 – 16:00 · Batterijopslag: kruk → opstaan + stappen → wijst in camera" }
+    ]
+  },
+  {
+    id: "jacqueline-studio",
+    name: "Jacqueline — studio",
+    priority: "high",
+    location: "Your Own Studio (witte achtergrond)",
+    slots: [
+      { day: "dag", time: "16:00 – 17:30 · Verzuim: kruk → opstaan + stappen → wijst in camera" },
+      { day: "dag", time: "16:00 – 17:30 · Cybercrime: kruk → opstaan + stappen → wijst in camera" },
+      { day: "dag", time: "16:00 – 17:30 · Batterijopslag: kruk → opstaan + stappen → wijst in camera" }
+    ]
+  }
+];
+
+const UNIVE_INFO = {
+  title: "Univé adviseursvideo's — wo 26 augustus",
+  groups: [
+    {
+      label: "📋 Draaiboek",
+      text: "08:30 – 09:00  Verkenning kantoor USL, apparatuur klaarzetten (Fatma, Leroy, Jeroen, Jorrit)\n08:45  Miranda aanwezig\n09:00 – 10:00  Opnames kantoor — Miranda\n09:45  Jacqueline aanwezig\n10:00 – 11:00  Opnames kantoor — Jacqueline\n10:30 – 11:30  Props klaarzetten studio (Jorrit)\n10:45  Wilrieke aanwezig\n11:00 – 12:00  Opnames kantoor — Wilrieke\n12:00 – 13:00  Uitloop & lunch (Your Own Studio)\n13:00 – 14:30  Studio — Miranda\n14:30 – 16:00  Studio — Wilrieke\n16:00 – 17:30  Studio — Jacqueline"
+    },
+    {
+      label: "📍 Locaties",
+      text: "Kantoor Univé Stad en Land: Christiaan Geurtsweg 8, 7335 JV Apeldoorn\nYour Own Studio: Jean Monnetpark 73, 7336 BB Apeldoorn"
+    },
+    {
+      label: "📞 Contactpersonen",
+      text: "Fatma Aydoğdu (USL): 06-18785877\nLeroy Filon (Wijzijnwolf.nl): 06-46158387\nJeroen Hardenberg (Creators Connect): 06-53769558\nJorrit Drieënhuizen (Social Selling Coach): 06-57481119"
+    },
+    {
+      label: "🎥 Specs",
+      text: "Verticaal · max 1 minuut · dynamisch (paar standpunten) · ondertiteld · eindkaart. Univé-beeldmerk komt rechtsboven in beeld — hou die hoek vrij."
+    },
+    {
+      label: "🗒️ Autocue — Verzuim",
+      text: "WINKEL:\nHeb jij veel zieke medewerkers? Je bent niet de enige.\nHet landelijk ziekteverzuim kost de samenleving zo'n 29 miljard euro! Voor jou betekent het extra werkdruk, meer kosten en soms zelfs omzetverlies.\nEn weet je wat nou zo jammer is? De aandacht gaat vooral naar het begeleiden van dat verzuim. Maar voorkomen is nog altijd beter dan genezen.\n\nSTUDIO:\nDrukte, gedoe thuis, gebrek aan scherpte: daar begint het vaak mee. Ik zie dat veel bij mijn eigen klanten. Het zijn de eerste signalen.\nAls je daar scherp op bent, voorkom je al heel wat. Denk er eens over na: wanneer heb je voor het laatst gevraagd hoe het écht met je collega's gaat?\nOp de langere termijn is het slim om te investeren in mentale gezondheid, vitaliteit en duurzame inzetbaarheid. Al snel goedkoper dan een uitgebreid re-integratietraject. En je krijgt er blije medewerkers van! Meer weten? Ik denk graag met je mee."
+    },
+    {
+      label: "🗒️ Autocue — Cybercrime",
+      text: "WINKEL:\nHet gaat keihard met AI. Je bent er vast al volop mee bezig. Bijvoorbeeld om tijd te besparen of processen te optimaliseren. Maar kijk je ook weleens naar de risico's?\nDe ontwikkelingen gaan zo snel, dat de beveiliging en het bewustzijn onder collega's bij veel bedrijven achterlopen.\nIk zie het regelmatig. Gevoelige bedrijfsinformatie die zomaar in een AI-tool verdwijnt. Klantgegevens die in een openbare database belanden: dat wil je niet!\n\nSTUDIO:\nWacht niet tot er iets misgaat, maar kom snel in actie. Maak bijvoorbeeld duidelijke afspraken over AI-gebruik in het bedrijf. En zorg dat je mensen zich bewust worden van de risico's. Techniek houdt veel tegen, maar de zwakste schakel is meestal gewoon een mens met iets te veel haast.\nCheck ook of een cyberverzekering bij jouw onderneming past. Of doe onze gratis Cyber Fit Service.\nMeer weten? Ik help je graag op weg."
+    },
+    {
+      label: "🗒️ Autocue — Batterijopslag",
+      text: "WINKEL:\nHeb je zonnepanelen op het dak van je bedrijf? Dan heb je er misschien ook wel eens aan gedacht om al die opgewekte energie op te slaan. Batterijen worden steeds interessanter, ook voor ondernemers. Niet zo gek want de energieprijzen rijzen de pan uit. En je stroom terugleveren voor een habbekrats? Dat klinkt niet erg aanlokkelijk. Dus installeren maar, zo'n energie-opslag-systeem! Slim én duurzaam. Toch? Nou, er zitten wel wat addertjes onder het gras.\n\nSTUDIO:\nWant niet elk EOS-systeem is automatisch verzekerbaar. Er zijn eisen aan de plaatsing, de installatie, de beveiliging. Dat wil je helder in kaart hebben. Mijn advies? Betrek je installateur, je verzekeraar en eventueel je verhuurder vóóraf bij je plannen. Vraag na welke eisen er gelden. Dat voorkomt discussie als er ooit schade komt. Want verduurzamen is belangrijk, maar laten we het wel veilig doen. En dus goed verzekerbaar. Zullen we samen eens door je plannen lopen?"
+    }
+  ]
+};
+
+// ============================================================
 // PROJECT-REGISTER
 // ============================================================
 
 const PROJECTS = [
+  {
+    id: "unive",
+    name: "Univé adviseursvideo's",
+    subtitle: "USL Apeldoorn · wo 26 aug · 3 adviseurs × 3 kennisvideo's",
+    icon: "🛡️",
+    stateKey: "unive_v1",
+    doneMode: "all", // alle onderwerpen per adviseur moeten binnen zijn
+    days: [
+      { key: "dag", label: "Wo 26 aug", date: "2026-08-26" }
+    ],
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#0b7a3e", soft: "#e0f0e7" },
+      { id: "jeroen", name: "Jeroen", color: "#2563b8", soft: "#e3edfb" }
+    ],
+    info: UNIVE_INFO,
+    acts: UNIVE_ACTS
+  },
   {
     id: "de-opening",
     name: "De Opening 2026",
