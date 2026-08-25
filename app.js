@@ -21,10 +21,11 @@ function loadState(p) {
       if (!s.slots) s.slots = {};
       if (!s.notes) s.notes = {};
       if (!s.assign) s.assign = {};
+      if (!s.crew) s.crew = [];
       return s;
     }
   } catch (e) {}
-  return { slots: {}, notes: {}, assign: {}, filters: { day: "all", status: "all", priorities: [], sort: "time", who: "all" } };
+  return { slots: {}, notes: {}, assign: {}, crew: [], filters: { day: "all", status: "all", priorities: [], sort: "time", who: "all" } };
 }
 function saveState() {
   if (!project || !state) return;
@@ -44,15 +45,60 @@ function isActDoneIn(p, s, act) {
 function isActDone(act) { return isActDoneIn(project, state, act); }
 
 // ---- Toewijzing (crew) ----
+// Kleuren voor in de app toegevoegde crewleden (eerste vrije wordt gepakt)
+const CREW_COLORS = [
+  { color: "#7c3aed", soft: "#efe9fb" },
+  { color: "#d97706", soft: "#fbf0dd" },
+  { color: "#0d9488", soft: "#e0f2f0" },
+  { color: "#c0392b", soft: "#f9e5e2" },
+  { color: "#d6479c", soft: "#fae3f0" },
+  { color: "#475569", soft: "#e8ecf1" }
+];
+
+function crewList() {
+  // vaste crew uit data.js + in de app toegevoegde crewleden
+  return [...(project.crew || []), ...(state && state.crew ? state.crew : [])];
+}
 function crewOf(act) {
-  if (!project.crew) return null;
+  const list = crewList();
+  if (list.length === 0) return null;
   const id = state.assign[act.id];
-  return id ? project.crew.find(c => c.id === id) || null : null;
+  return id ? list.find(c => c.id === id) || null : null;
 }
 function setAssign(actId, crewId) {
   if (crewId) state.assign[actId] = crewId;
   else delete state.assign[actId];
   saveState();
+  render();
+}
+function addCrewMember(name) {
+  name = String(name || "").trim();
+  if (!name) return null;
+  const used = crewList().map(c => c.color);
+  const palette = CREW_COLORS.find(c => !used.includes(c.color)) || CREW_COLORS[state.crew.length % CREW_COLORS.length];
+  const member = {
+    id: "c_" + Date.now().toString(36),
+    name,
+    color: palette.color,
+    soft: palette.soft
+  };
+  state.crew.push(member);
+  saveState();
+  buildWhoChips();
+  restoreFilterUI();
+  render();
+  return member;
+}
+function removeCrewMember(id) {
+  state.crew = state.crew.filter(c => c.id !== id);
+  // toewijzingen aan dit crewlid opheffen
+  for (const actId of Object.keys(state.assign)) {
+    if (state.assign[actId] === id) delete state.assign[actId];
+  }
+  if (state.filters.who === id) state.filters.who = "all";
+  saveState();
+  buildWhoChips();
+  restoreFilterUI();
   render();
 }
 
@@ -231,7 +277,8 @@ function buildDayChips() {
 function buildWhoChips() {
   const row = document.getElementById("whoRow");
   row.innerHTML = "";
-  if (!project.crew || project.crew.length === 0) {
+  const list = crewList();
+  if (list.length === 0) {
     row.style.display = "none";
     state.filters.who = "all";
     return;
@@ -257,7 +304,7 @@ function buildWhoChips() {
     row.appendChild(btn);
   };
   mk("all", "Iedereen");
-  project.crew.forEach(c => mk(c.id, c.name, c.color));
+  list.forEach(c => mk(c.id, c.name, c.color));
   mk("none", "Niet toegewezen");
 }
 
@@ -305,7 +352,7 @@ function restoreFilterUI() {
     b.classList.toggle("active", b.dataset.day === state.filters.day);
   });
   // reset wie-filter als crewlid niet meer bestaat
-  const validWho = ["all", "none", ...(project.crew || []).map(c => c.id)];
+  const validWho = ["all", "none", ...crewList().map(c => c.id)];
   if (!validWho.includes(state.filters.who)) state.filters.who = "all";
   document.querySelectorAll("#whoRow .chip").forEach(b => {
     b.classList.toggle("active", b.dataset.who === state.filters.who);
@@ -360,7 +407,7 @@ function filterActs() {
     }
     if (state.filters.status === "todo" && isActDone(act)) return false;
     if (state.filters.status === "done" && !isActDone(act)) return false;
-    if (project.crew && state.filters.who !== "all") {
+    if (crewList().length > 0 && state.filters.who !== "all") {
       const assigned = state.assign[act.id] || null;
       if (state.filters.who === "none") { if (assigned) return false; }
       else if (assigned !== state.filters.who) return false;
@@ -556,17 +603,18 @@ function openModal(act) {
   });
   // toewijzen aan crewlid
   const assignEl = document.getElementById("modalAssign");
-  if (project.crew && project.crew.length > 0) {
+  {
     const current = state.assign[act.id] || null;
+    const customIds = state.crew.map(c => c.id);
     assignEl.style.display = "";
     assignEl.innerHTML = "<label class='notes-label'>Toewijzen aan</label>";
     const row = document.createElement("div");
     row.className = "assign-row";
-    const mkBtn = (id, text, color) => {
+    const mkBtn = (id, text, color, removable) => {
       const btn = document.createElement("button");
       btn.className = "chip assign-chip" + ((id === current) || (!id && !current) ? " active" : "");
       btn.textContent = text;
-      if (color && ((id === current))) {
+      if (color && id === current) {
         btn.style.background = color;
         btn.style.borderColor = color;
         btn.style.color = "#fff";
@@ -575,14 +623,39 @@ function openModal(act) {
         setAssign(act.id, id === current ? null : id);
         openModal(act); // refresh modal
       });
+      if (removable) {
+        const x = document.createElement("span");
+        x.className = "chip-remove";
+        x.textContent = "✕";
+        x.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const member = state.crew.find(c => c.id === id);
+          if (!member) return;
+          if (!confirm(`"${member.name}" verwijderen? Toewijzingen aan ${member.name} vervallen.`)) return;
+          removeCrewMember(id);
+          openModal(act);
+        });
+        btn.appendChild(x);
+      }
       row.appendChild(btn);
     };
     mkBtn(null, "Niemand");
-    project.crew.forEach(c => mkBtn(c.id, c.name, c.color));
+    crewList().forEach(c => mkBtn(c.id, c.name, c.color, customIds.includes(c.id)));
+    // nieuw crewlid toevoegen
+    const addBtn = document.createElement("button");
+    addBtn.className = "chip assign-chip add-crew";
+    addBtn.textContent = "+ Naam toevoegen";
+    addBtn.addEventListener("click", () => {
+      const name = prompt("Naam van het nieuwe crewlid:");
+      if (name === null) return;
+      const member = addCrewMember(name);
+      if (member) {
+        setAssign(act.id, member.id); // direct toewijzen aan de nieuwe naam
+      }
+      openModal(act);
+    });
+    row.appendChild(addBtn);
     assignEl.appendChild(row);
-  } else {
-    assignEl.style.display = "none";
-    assignEl.innerHTML = "";
   }
   document.getElementById("modalNotes").value = state.notes[act.id] || "";
   document.getElementById("modal").classList.remove("hidden");

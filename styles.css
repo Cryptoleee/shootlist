@@ -365,6 +365,19 @@ body.home-mode .back-btn { display: none; }
   gap: 8px;
 }
 .assign-chip { font-size: 13px; }
+.assign-chip.add-crew {
+  border-style: dashed;
+  color: var(--muted);
+  background: transparent;
+}
+.chip-remove {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 2px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+.chip-remove:active { opacity: 1; }
 #whoRow .chip.active {
   background: var(--crew-color, var(--ink));
   border-color: var(--crew-color, var(--ink));
