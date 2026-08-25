@@ -47,6 +47,27 @@ body {
   font-weight: 700;
   letter-spacing: 0.3px;
 }
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.topbar-left h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.back-btn {
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 12px 6px;
+  flex-shrink: 0;
+}
+/* Home-mode: verberg alles wat bij een geopende klus hoort */
+body.home-mode .project-only,
+body.home-mode .back-btn { display: none; }
+
 .ghost-btn {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.5);
@@ -106,6 +127,105 @@ body {
 /* Views */
 .view { display: none; }
 .view.active { display: block; }
+
+/* Home: klus-keuze */
+.home-intro {
+  padding: 20px 16px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.projects-list {
+  padding: 4px 12px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.project-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.project-card:active { transform: scale(0.985); }
+.project-icon {
+  font-size: 30px;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: var(--green-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.project-info { flex: 1; min-width: 0; }
+.project-info h3 {
+  margin: 0 0 2px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+.project-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.project-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.project-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.project-progress-bar > div {
+  height: 100%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.project-arrow {
+  font-size: 26px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Info-tab (bv. toestemmingslijst) */
+.info-group { margin-bottom: 16px; }
+.info-group-label {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+.info-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.name-chip {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
 
 /* Filters */
 .filters {
@@ -317,8 +437,8 @@ body {
   border-color: var(--green);
   color: #fff;
 }
-.slot-time { font-weight: 700; font-size: 13px; }
-.slot-loc { color: var(--muted); flex: 1; min-width: 0; }
+.slot-time { font-weight: 700; font-size: 13px; flex: 1; min-width: 0; }
+.slot-loc { color: var(--muted); flex-shrink: 0; text-align: right; }
 .slot.captured .slot-time, .slot.captured .slot-loc { text-decoration: line-through; opacity: 0.6; }
 
 /* Voorbij-slot: grijs, niet meer mogelijk om te schieten */
@@ -500,4 +620,6 @@ body {
   .tabs { max-width: 700px; margin: 0 auto; }
   .filters { max-width: 700px; margin: 0 auto; }
   .acts-list { max-width: 700px; margin: 0 auto; }
+  .projects-list { max-width: 700px; margin: 0 auto; }
+  .home-intro { max-width: 700px; margin: 0 auto; }
 }

@@ -8,36 +8,41 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="mobile-web-app-capable" content="yes" />
 <link rel="manifest" href="manifest.json" />
-<title>Shootlist De Opening</title>
+<title>Shootlist</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="home-mode">
 <header class="topbar">
   <div class="topbar-inner">
-    <h1>Shootlist</h1>
-    <button id="resetBtn" class="ghost-btn" title="Alles resetten">Reset</button>
+    <div class="topbar-left">
+      <button id="backBtn" class="ghost-btn back-btn" title="Terug naar klussen">‹</button>
+      <h1 id="appTitle">Shootlist</h1>
+    </div>
+    <button id="resetBtn" class="ghost-btn project-only" title="Alles resetten">Reset</button>
   </div>
-  <div class="progress-wrap">
+  <div class="progress-wrap project-only">
     <div class="progress-text"><span id="progressText">0 / 0 vastgelegd</span></div>
     <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
   </div>
-  <nav class="tabs">
+  <nav class="tabs project-only">
     <button class="tab active" data-tab="list">Lijst</button>
     <button class="tab" data-tab="map">Plattegrond</button>
     <button class="tab" data-tab="timetable">Timetable</button>
+    <button class="tab" data-tab="info">Info</button>
   </nav>
 </header>
 
 <main>
+  <!-- HOME: klus-keuze -->
+  <section id="view-home" class="view active">
+    <div class="home-intro">Kies een klus</div>
+    <div id="projectsList" class="projects-list"></div>
+  </section>
+
   <!-- LIST VIEW -->
-  <section id="view-list" class="view active">
+  <section id="view-list" class="view">
     <div class="filters">
-      <div class="filter-row">
-        <button class="chip active" data-day="all">Alle</button>
-        <button class="chip" data-day="vr">Vr 28 aug</button>
-        <button class="chip" data-day="za">Za 29 aug</button>
-        <button class="chip" data-day="zo">Zo 30 aug</button>
-      </div>
+      <div class="filter-row" id="dayChips"></div>
       <div class="filter-row">
         <button class="chip secondary active" data-status="all">Alles</button>
         <button class="chip secondary" data-status="todo">Nog doen</button>
@@ -61,29 +66,21 @@
   <!-- MAP VIEW -->
   <section id="view-map" class="view">
     <div class="image-wrap">
-      <img src="Locaties.jpg" alt="Plattegrond locaties" class="zoom-img" />
+      <img id="mapImg" src="" alt="Plattegrond locaties" class="zoom-img" />
     </div>
-    <div class="legend">
-      <h3>Locaties</h3>
-      <ul>
-        <li><b>Binnenstad</b> — Caterplein (buitenpodium), Raadhuisplein, parkje Marktstraat, hoek Paslaan/Hoofdstraat, Grote Markthof, Etalageroute</li>
-        <li><b>Cultuurkwartier</b> — ACEC, CODA, GIGANT (+ Van Reekumplein), Grote Kerk</li>
-        <li><b>Theater Orpheus</b></li>
-        <li><b>Oranjepark</b></li>
-        <li><b>Paleis Het Loo</b> — Stallenplein (overdekt)</li>
-        <li><b>Park Zuidbroek</b> — naast de voetbalcourt (KinderKaravaan)</li>
-        <li><b>Zwitsalhal</b> — Pim &amp; Pom Festival</li>
-        <li><b>Theehuis Berg &amp; Bos</b> — Tentoonstelling Verenigde Apeldoorners</li>
-        <li><b>Lighthouse Jongerencafé</b> — Van Kinsbergenstraat 8 (Matthijn Buwalda)</li>
-      </ul>
-    </div>
+    <div class="legend" id="mapLegend"></div>
   </section>
 
   <!-- TIMETABLE VIEW -->
   <section id="view-timetable" class="view">
     <div class="image-wrap">
-      <img src="timetable.jpg" alt="Timetable" class="zoom-img" />
+      <img id="ttImg" src="" alt="Timetable" class="zoom-img" />
     </div>
+  </section>
+
+  <!-- INFO VIEW (bv. toestemmingslijst figuranten) -->
+  <section id="view-info" class="view">
+    <div class="legend" id="infoContent"></div>
   </section>
 </main>
 

@@ -1,13 +1,19 @@
-// Shootlist data — De Opening 2026, Apeldoorn (vr 28 – zo 30 augustus).
+// Shootlist data — meerdere klussen (projecten).
+// Elke klus heeft: id, name, subtitle, icon, stateKey (localStorage),
+// doneMode ("any" = 1 slot is genoeg, "all" = alle shots nodig),
+// days [{key, label, date?}] (date → "voorbij"-detectie), acts,
+// en optioneel map {image, legend[]}, timetable {image}, info {title, groups[]}.
+
+// ============================================================
+// KLUS 1: De Opening 2026 (Apeldoorn, vr 28 – zo 30 augustus)
 // Bronnen: blokkenschema A3-flyer (2e druk), briefing foto & video,
 // https://uit.inapeldoorn.nl/de-opening/ + detailpagina's per act,
 // https://theaterindestad.nl/programma/. Laatst gecheckt: 21 aug 2026.
-//
 // priority: "high" = must-have (story-momenten + highlights uit de briefing),
 //           "normal" = overig programma, "conditional" = alleen onder voorwaarde.
-// story: true = organisatie wil beeld bij de start appen (06 22808236).
+// ============================================================
 
-const ACTS = [
+const DE_OPENING_ACTS = [
   // ---------- VRIJDAG ----------
   {
     id: "kinderkaravaan",
@@ -550,5 +556,215 @@ const ACTS = [
   }
 ];
 
-// Datums per festival-dag (Europe/Amsterdam) — gebruikt voor "is voorbij" check
-const FESTIVAL_DATES = { vr: "2026-08-28", za: "2026-08-29", zo: "2026-08-30" };
+// ============================================================
+// KLUS 2: Bedrijfsvideo (lijmproductie, panden 5/7/9)
+// Bron: Bedrijfsvideo_shots.xlsx (tabbladen "shots" en "akkoord").
+// doneMode "all": een blok is pas klaar als álle shots binnen zijn.
+// ============================================================
+
+const BEDRIJFSVIDEO_ACTS = [
+  {
+    id: "productie-label",
+    name: "Productie: labelen",
+    priority: "high",
+    location: "Pand 5",
+    slots: [
+      { day: "dag", time: "08:15 · Labelrol wordt in de labelmachine geïnstalleerd (50 ml & 220 ml) — Salih" },
+      { day: "dag", time: "08:15 · De machine wordt bediend — Salih" },
+      { day: "dag", time: "08:15 · Verschillende labelmachines in actie (50 ml & 220 ml)" },
+      { day: "dag", time: "08:15 · Cartridges (50 & 220 ml) worden in een krat gestopt — Salih" },
+      { day: "dag", time: "08:15 · Close-ups: cartridges in doos + doos dichttapen (camera ín de doos!)" }
+    ],
+    note: "LET OP: Salih = akkoord maar NIET herkenbaar in beeld (handen/rug). Beschikbare labels: Plastgrip ME 6520B (50ml), 6523B & 6525B (220ml), 2K-Epoxy 6160B (195ml), MMA 6207W (220ml), 6203C (50ml)."
+  },
+  {
+    id: "logistiek-sealen",
+    name: "Logistiek: pallets sealen",
+    priority: "high",
+    location: "Pand 5",
+    slots: [
+      { day: "dag", time: "09:15 · Pallets met dozen worden geseald — Bert" }
+    ],
+    note: "Maandag checken bij Bert hoe we dit het beste kunnen doen."
+  },
+  {
+    id: "productie-vullen",
+    name: "Productie: vullen",
+    priority: "high",
+    location: "Pand 7",
+    slots: [
+      { day: "dag", time: "09:30 · Cartridges (24/50/195/220 ml) gaan door de vulmachine" },
+      { day: "dag", time: "09:30 · De dop gaat erop — Hans Hoegen, Adje" },
+      { day: "dag", time: "09:30 · Volle cartridges worden in een krat gelegd — Hans Hoegen, Adje" }
+    ],
+    note: "LET OP: Hans Hoegen én Adje = akkoord maar NIET herkenbaar in beeld — film handen/rug/detail."
+  },
+  {
+    id: "opslag",
+    name: "Opslag",
+    priority: "high",
+    location: "Pand 7",
+    slots: [
+      { day: "dag", time: "±09:30-blok · Hans Hoegen rijdt met heftruck langs de stellingen — regie: Bert" },
+      { day: "dag", time: "±09:30-blok · Close-ups van lege cartridges en onderdelen in doos of krat" }
+    ],
+    note: "LET OP: Hans Hoegen mag NIET herkenbaar — film de heftruck van achteren/afstand of onherkenbaar."
+  },
+  {
+    id: "training",
+    name: "Training",
+    priority: "high",
+    location: "Pand 9 — trainingsruimte",
+    slots: [
+      { day: "dag", time: "10:30 · Brent geeft een training — Brent + figurant" }
+    ],
+    note: "Zwarte handschoenen + lijm klaarleggen."
+  },
+  {
+    id: "klantafspraak",
+    name: "Klantafspraak",
+    priority: "high",
+    location: "Pand 9 — boardroom",
+    slots: [
+      { day: "dag", time: "±10:30-blok · Klant komt binnen in de boardroom en geeft Brent een hand — Brent + figurant" }
+    ]
+  },
+  {
+    id: "kantoor",
+    name: "Kantoor",
+    priority: "high",
+    location: "Pand 9",
+    slots: [
+      { day: "dag", time: "±10:30-blok · Kantoorwerkzaamheden: salesoverleg, werken achter de computer, sales + R&D kijken samen mee — Theo, Joeri, Bertus, Jarno" },
+      { day: "dag", time: "±10:30-blok · Theo is aan het bellen op kantoor — Theo" }
+    ]
+  },
+  {
+    id: "rd",
+    name: "R&D",
+    priority: "high",
+    location: "Pand 9 — lab",
+    slots: [
+      { day: "dag", time: "11:30 · Collega's gebruiken machines: labmenger (zwart), trekbank lapshears (zwart), dumbells (grijs), kokers in klimaatkast, zuurkast, UV-kast (wit) — Jarno, Mathijs (Bertus)" },
+      { day: "dag", time: "11:30 · Werken aan lange tafel, iemand loopt door de ruimte; 200 gr potje vullen met vloeistoffen en poeders in verschillende kleuren — Jarno, Mathijs (Bertus)" }
+    ],
+    note: "Klaarleggen: poeders, weegschaal, kleurpigment, vloeistoffen. Eventueel plantenspuit meenemen."
+  },
+  {
+    id: "qc",
+    name: "QC (kwaliteitscontrole)",
+    priority: "high",
+    location: "Pand 9",
+    slots: [
+      { day: "dag", time: "±11:30-blok · Infraroodscan, viscositeitsmeting door Bertus (zwart), controle cartridge: testen op naloop, uitspuiten (400 of 600 ml) — Bertus (Jarno), Arent" },
+      { day: "dag", time: "±11:30-blok · Bertus loopt met clipboard naar de mengafdeling en overlegt met Arent" }
+    ],
+    note: "Infraroodscan-software staat alléén op de laptop van Bertus."
+  },
+  {
+    id: "productie-mengen",
+    name: "Productie: mengen",
+    priority: "high",
+    location: "Pand 9 (→ 7)",
+    slots: [
+      { day: "dag", time: "±11:30-blok · Gemengde lijm gaat van productie naar pand 7 — buitenshot: heftruck rijdt van 9 naar 7 — Paul" },
+      { day: "dag", time: "±11:30-blok · Paul haalt grondstof met heftruck en rijdt naar de weegschaal — Paul" },
+      { day: "dag", time: "±11:30-blok · Grondstoffen gaan in de ketel: vloeistof en poeders — Arent, Brian" },
+      { day: "dag", time: "±11:30-blok · Ketel wordt onder de mengmachine geschoven — Arent, Brian" },
+      { day: "dag", time: "±11:30-blok · Lijm mengen, zichtbaar door het raampje" },
+      { day: "dag", time: "±11:30-blok · Mengmachine gaat open en dicht, Arent bedient het paneel — Arent" },
+      { day: "dag", time: "±11:30-blok · Afdrummen" }
+    ],
+    note: "LET OP: toestemming van Paul is nog onbekend (?) — hij is maandag terug van vakantie. Eerst checken vóór hij herkenbaar in beeld komt."
+  },
+  {
+    id: "drone-panden",
+    name: "Drone: panden",
+    priority: "conditional",
+    location: "Buiten — panden 5, 7 & 9",
+    slots: [
+      { day: "dag", time: "Wanneer de zon doorkomt · Drone-totaalshot van alle 3 de panden" },
+      { day: "dag", time: "Wanneer de zon doorkomt · Drone-shot van Eddie en Brent voor het pand — Eddie, Brent" }
+    ],
+    note: "Alleen bij zon. LET OP: toestemming van Eddie is nog onbekend (?) — eerst checken."
+  }
+];
+
+const BEDRIJFSVIDEO_INFO = {
+  title: "Toestemming figuranten (uit akkoord-lijst)",
+  groups: [
+    {
+      label: "✅ Akkoord — herkenbaar in beeld mag",
+      names: ["Alex", "Amber", "Arent", "Bert", "Bertus", "Brent", "Brian", "Jarno", "Joeri", "Marc", "Mascha", "Matthijs", "Theo"]
+    },
+    {
+      label: "⚠️ Akkoord, maar NIET herkenbaar in beeld",
+      names: ["Adje", "Hans Hoegen", "Salih"]
+    },
+    {
+      label: "❌ GEEN akkoord — niet in beeld",
+      names: ["Jolande", "Kees"]
+    },
+    {
+      label: "❓ Toestemming nog onbekend — eerst checken",
+      names: ["Eddie", "Grietje", "Jan-Willem", "Paul (ma terug van vakantie)"]
+    },
+    {
+      label: "⬜ Nog niet gevraagd",
+      names: ["Elroy", "Gertie", "Richard", "Vincent"]
+    },
+    {
+      label: "🚫 Niet aanwezig",
+      names: ["Charlotte", "Dorieke", "Elles", "Hans de Haan", "Jasper", "Kitty", "Pablo", "Sanne"]
+    }
+  ]
+};
+
+// ============================================================
+// PROJECT-REGISTER
+// ============================================================
+
+const PROJECTS = [
+  {
+    id: "de-opening",
+    name: "De Opening 2026",
+    subtitle: "Apeldoorn · vr 28 – zo 30 augustus · foto & video",
+    icon: "🎭",
+    stateKey: "v2_deopening", // behoudt bestaande vinkjes
+    doneMode: "any", // festival: één goede snippet per act is genoeg
+    days: [
+      { key: "vr", label: "Vr 28 aug", date: "2026-08-28" },
+      { key: "za", label: "Za 29 aug", date: "2026-08-29" },
+      { key: "zo", label: "Zo 30 aug", date: "2026-08-30" }
+    ],
+    map: {
+      image: "Locaties.jpg",
+      legend: [
+        ["Binnenstad", "Caterplein (buitenpodium), Raadhuisplein, parkje Marktstraat, hoek Paslaan/Hoofdstraat, Grote Markthof, Etalageroute"],
+        ["Cultuurkwartier", "ACEC, CODA, GIGANT (+ Van Reekumplein), Grote Kerk"],
+        ["Theater Orpheus", ""],
+        ["Oranjepark", ""],
+        ["Paleis Het Loo", "Stallenplein (overdekt)"],
+        ["Park Zuidbroek", "naast de voetbalcourt (KinderKaravaan)"],
+        ["Zwitsalhal", "Pim & Pom Festival"],
+        ["Theehuis Berg & Bos", "Tentoonstelling Verenigde Apeldoorners"],
+        ["Lighthouse Jongerencafé", "Van Kinsbergenstraat 8 (Matthijn Buwalda)"]
+      ]
+    },
+    timetable: { image: "timetable.jpg" },
+    acts: DE_OPENING_ACTS
+  },
+  {
+    id: "bedrijfsvideo",
+    name: "Bedrijfsvideo lijmproductie",
+    subtitle: "Panden 5, 7 & 9 · productie, R&D, kantoor · blokken 08:15 – ±12:30",
+    icon: "🏭",
+    stateKey: "bedrijfsvideo_v1",
+    doneMode: "all", // bedrijfsvideo: alle shots per blok moeten binnen zijn
+    days: [
+      { key: "dag", label: "Shootdag" }
+    ],
+    info: BEDRIJFSVIDEO_INFO,
+    acts: BEDRIJFSVIDEO_ACTS
+  }
+];
