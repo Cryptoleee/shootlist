@@ -91,7 +91,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "Alex Barti Show — 12:00, 13:45, 15:30 (Grote Markthof)" },
       { day: "za", time: "Smallest Show on Earth — 13:00, 14:30, 15:30 (mobiel)" }
     ],
-    note: "STORY: briefing zegt 12:30 parkje Marktstraat, maar volgens theaterindestad.nl starten de eerste acts om 12:00. Wees er dus 12:00 — briefing-highlight."
+    note: "NIET alles nodig: 1 à 2 acts pakken is genoeg, dit zijn alle kansen van de middag. STORY: briefing zegt 12:30 parkje Marktstraat, maar volgens theaterindestad.nl starten de eerste acts al om 12:00."
   },
   {
     id: "apoppoldro",
@@ -342,7 +342,7 @@ const DE_OPENING_ACTS = [
       { day: "zo", time: "Alex Barti Show — 13:00, 15:00 (ingang Oranjerie)" },
       { day: "zo", time: "Sisters of Soap — 13:15 – 16:15 (mobiel, Marktstraat)" }
     ],
-    note: "STORY: Doe-Het-Zelf Theater 12:30 bij parkje Marktstraat direct appen — klopt met site."
+    note: "NIET alles nodig: alleen het story-moment is vast, de rest zijn kansen voor onderweg (elke act speelt 2-3 rondes). STORY: Doe-Het-Zelf Theater 12:30 bij parkje Marktstraat direct appen."
   },
   {
     id: "anansi",
