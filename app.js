@@ -781,15 +781,77 @@ document.querySelectorAll(".tab").forEach(t => {
 // ---- Terug naar klus-overzicht ----
 document.getElementById("backBtn").addEventListener("click", showHome);
 
-// ---- Reset (alleen actieve klus) ----
-document.getElementById("resetBtn").addEventListener("click", () => {
-  if (!project) return;
-  if (!confirm(`Alle vinkjes en notities van "${project.name}" resetten? (Dit synct ook naar andere telefoons.)`)) return;
+// ---- Toast (melding onderin, optioneel met actieknop) ----
+let toastTimer = null;
+function showToast(msg, actionLabel, onAction, ms) {
+  const t = document.getElementById("toast");
+  t.innerHTML = `<span>${escapeHtml(msg)}</span>` +
+    (actionLabel ? `<button id="toastAction">${escapeHtml(actionLabel)}</button>` : "");
+  t.classList.add("show");
+  if (actionLabel) {
+    document.getElementById("toastAction").addEventListener("click", () => {
+      hideToast();
+      if (onAction) onAction();
+    });
+  }
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, ms || 4000);
+}
+function hideToast() {
+  document.getElementById("toast").classList.remove("show");
+}
+
+// ---- Reset (alleen actieve klus) — met typ-bevestiging en undo ----
+let resetBackup = null; // laatste reset, voor "Ongedaan maken"
+
+function performReset() {
+  // backup vóór het wissen (ook naar localStorage als extra vangnet)
+  resetBackup = {
+    projectId: project.id,
+    slots: JSON.parse(JSON.stringify(state.slots)),
+    notes: JSON.parse(JSON.stringify(state.notes))
+  };
+  try {
+    localStorage.setItem(
+      "shootlist_backup_" + project.stateKey,
+      JSON.stringify({ ...resetBackup, at: new Date().toISOString() })
+    );
+  } catch (e) {}
   // tombstones i.p.v. leegmaken, anders komt de oude staat via sync terug
   for (const k of Object.keys(state.slots)) setEntry(state.slots, k, 0);
   for (const k of Object.keys(state.notes)) setEntry(state.notes, k, "");
   saveState();
   render();
+  showToast("Reset uitgevoerd", "Ongedaan maken", undoReset, 20000);
+}
+
+function undoReset() {
+  if (!resetBackup || !project || resetBackup.projectId !== project.id) return;
+  // terugzetten met nieuwe timestamps, zodat het herstel ook wint van de
+  // reset-tombstones op andere (gesyncte) telefoons
+  for (const [k, e] of Object.entries(resetBackup.slots)) {
+    if (e && e.v) setEntry(state.slots, k, e.v);
+  }
+  for (const [k, e] of Object.entries(resetBackup.notes)) {
+    if (e && e.v) setEntry(state.notes, k, e.v);
+  }
+  resetBackup = null;
+  saveState();
+  render();
+  showToast("Vinkjes en notities hersteld");
+}
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (!project) return;
+  const answer = prompt(
+    `Alle vinkjes en notities van "${project.name}" wissen — óók op andere telefoons.\n\nTyp RESET om te bevestigen:`
+  );
+  if (answer === null) return;
+  if (answer.trim().toUpperCase() !== "RESET") {
+    showToast("Reset geannuleerd — je moet RESET typen");
+    return;
+  }
+  performReset();
 });
 
 // ---- Image zoom (tap to fullscreen) ----
