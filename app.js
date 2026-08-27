@@ -297,6 +297,7 @@ function buildTabs() {
       <div class="info-group">
         <div class="info-group-label">${escapeHtml(g.label)}</div>
         ${g.names ? `<div class="info-names">${g.names.map(n => `<span class="name-chip">${escapeHtml(n)}</span>`).join("")}</div>` : ""}
+        ${g.links ? `<div class="info-links">${g.links.map(l => `<a class="info-link" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.label)} ↗</a>`).join("")}</div>` : ""}
         ${g.text ? `<div class="info-text">${escapeHtml(g.text)}</div>` : ""}
       </div>
     `).join("");
@@ -509,7 +510,12 @@ function filterActs() {
       if (ka[0] !== kb[0]) return ka[0] - kb[0];
       return ka[1] - kb[1];
     }
-    // default: time
+    // default: time — maar acts met een expliciete routevolgorde (order) eerst
+    if (a.order != null || b.order != null) {
+      if (a.order == null) return 1;
+      if (b.order == null) return -1;
+      if (a.order !== b.order) return a.order - b.order;
+    }
     const ka = earliestSortKey(a, state.filters.day);
     const kb = earliestSortKey(b, state.filters.day);
     if (ka[0] !== kb[0]) return ka[0] - kb[0];

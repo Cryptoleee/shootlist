@@ -715,6 +715,25 @@ body.home-mode .back-btn { display: none; }
   font-weight: 600;
   color: var(--ink);
 }
+.info-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.info-link {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--volt);
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.15s var(--pop);
+}
+.info-link:active { transform: scale(0.98); border-color: var(--volt); }
+
 .info-text {
   background: var(--card);
   border: 1px solid var(--line);
