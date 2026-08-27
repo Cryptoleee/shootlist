@@ -580,16 +580,21 @@ body.home-mode .back-btn { display: none; }
   background: var(--line);
   transition: background 0.3s;
 }
+/* kleur loopt mee met voortgang: rood → oranje → groen */
+.step-progress { --stage: var(--volt); --stage-glow: rgba(255,224,27,0.3); }
+.step-progress.s-start { --stage: #ff3d5a; --stage-glow: rgba(255,61,90,0.35); }
+.step-progress.s-mid { --stage: #ff9f2e; --stage-glow: rgba(255,159,46,0.35); }
+.step-progress.s-done { --stage: #2ee07c; --stage-glow: rgba(46,224,124,0.35); }
 .step-segs span.on {
-  background: var(--volt);
-  box-shadow: 0 0 8px rgba(255,224,27,0.3);
+  background: var(--stage);
+  box-shadow: 0 0 8px var(--stage-glow);
 }
 .step-label {
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--volt);
+  color: var(--stage);
   flex-shrink: 0;
 }
 

@@ -606,8 +606,11 @@ function renderActCard(act) {
     }
     const label = nDone === 0 ? "" :
       (lastLabel.length <= 14 ? lastLabel : `${nDone}/${act.slots.length}`);
+    // kleur loopt mee met de voortgang: rood → oranje → groen
+    const ratio = nDone / act.slots.length;
+    const stage = nDone === 0 ? "" : ratio >= 1 ? " s-done" : ratio > 0.34 ? " s-mid" : " s-start";
     stepBar = `
-      <div class="step-progress${nDone > 0 ? " active" : ""}">
+      <div class="step-progress${stage}">
         <div class="step-segs">${checked.map(c => `<span class="${c ? "on" : ""}"></span>`).join("")}</div>
         ${label ? `<span class="step-label">${escapeHtml(label)}</span>` : ""}
       </div>`;
