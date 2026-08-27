@@ -889,30 +889,34 @@ function abaAct(order, id, name, cat, cluster, addr, email, tel, note) {
 
 const ABA_ACTS = [
   // Cluster A — Centrum (alles op loopafstand van Oranjelaan 2, ±2 km totaal)
-  abaAct(1, "aba-de-kap", "De Kap", "Maatschappelijke Organisaties", "A · Centrum", "Regentesselaan 2B, Apeldoorn", "info@dekap.nl", "055 529 55 20", "300 m van je startpunt"),
-  abaAct(2, "aba-zenzez", "ZenZeZ Hotel & Lounge", "Horeca en Toerisme", "A · Centrum", "Canadalaan 26, Apeldoorn", "info@zenzezhotel.nl", "055 522 24 33", ""),
-  abaAct(3, "aba-tm-vastgoed", "TM Vastgoedpromotie", "Starters", "A · Centrum", "Paslaan 9, Apeldoorn", "info@tmvastgoedpromotie.nl", "055 234 08 10", ""),
-  abaAct(4, "aba-teun", "Teun", "Horeca en Toerisme", "A · Centrum", "Kapelstraat 5, Apeldoorn", "info@teunapeldoorn.nl", "06 20 69 02 06", "Feestlocatie, alleen op afspraak open — afspraak dus essentieel"),
-  abaAct(5, "aba-mr-boost", "Mr Boost", "Groothandel en Dienstverlening", "A · Centrum", "Leienplein 5, Apeldoorn", "mail@mrboost.nl", "06 37 34 45 70", ""),
-  abaAct(6, "aba-sandmann", "Sandmann Optiek", "Detailhandel", "A · Centrum", "Mariastraat 4, Apeldoorn", "blij@sandmannoptiek.nl", "055 521 74 67", "LET OP: verhuisd van Hoofdstraat naar Mariastraat 4; maandag gesloten"),
-  abaAct(7, "aba-house-of-tall", "House of Tall", "Detailhandel", "A · Centrum", "Brinklaan 9-11, Apeldoorn", "apeldoorn@houseoftall.nl", "055 301 77 23", "Nieuwe winkel (sinds feb 2026)"),
+  abaAct(1, "aba-de-kap", "De Kap", "Maatschappelijke Organisaties", "A · Centrum", "Regentesselaan 2B, Apeldoorn", "info@dekap.nl", "055 529 55 20", "Contact: Lineke Maat · 300 m van je startpunt"),
+  abaAct(2, "aba-zenzez", "ZenZeZ Hotel & Lounge", "Horeca en Toerisme", "A · Centrum", "Canadalaan 26, Apeldoorn", "info@zenzezhotel.nl", "055 522 24 33", "Contact: Petra Bangma"),
+  abaAct(3, "aba-tm-vastgoed", "TM Vastgoedpromotie", "Starters", "A · Centrum", "Paslaan 9B, Apeldoorn", "info@tmvastgoedpromotie.nl", "055 234 08 10", "Contact: Taina Monteiro"),
+  abaAct(4, "aba-teun", "Teun", "Horeca en Toerisme", "A · Centrum", "Kapelstraat 5, Apeldoorn", "info@teunapeldoorn.nl", "06 20 69 02 06", "Contact: Elise Teunissen · Feestlocatie, alleen op afspraak open — afspraak dus essentieel"),
+  abaAct(5, "aba-mr-boost", "Mr Boost", "Groothandel en Dienstverlening", "A · Centrum", "Leienplein 5, Apeldoorn", "dennis@mrboost.nl", "06 37 34 45 70", "Contact: Dennis Kraus"),
+  abaAct(6, "aba-sandmann", "Sandmann Optiek", "Detailhandel", "A · Centrum", "Mariastraat 4, Apeldoorn", "blij@sandmannoptiek.nl + paul@sandmannoptiek.nl", "055 521 74 67", "Contact: Paul Mol & Patrick Sterenberg · LET OP: verhuisd van Hoofdstraat naar Mariastraat 4; maandag gesloten"),
+  abaAct(7, "aba-house-of-tall", "House of Tall", "Detailhandel", "A · Centrum", "Brinklaan 9-11, Apeldoorn", "inez.scheper@houseoftall.nl", "055 301 77 23", "Contact: Inez Scheper · Nieuwe winkel (sinds feb 2026)"),
 
   // Cluster B — Zuid (RTV → VRM → SPL → Cabinespecialist → Spelderholt, ±10 km)
-  abaAct(8, "aba-rtv", "RTV Apeldoorn", "Maatschappelijke Organisaties", "B · Zuid", "Arnhemseweg 82, Apeldoorn", "redactie@rtv-apeldoorn.nl", "055 533 51 66", ""),
-  abaAct(9, "aba-vrm", "VRM (Van Reekum Materials)", "Industrie en Technologie", "B · Zuid", "Oude Apeldoornseweg 36, Apeldoorn", "info@vrm.nl", "055 533 54 66", ""),
-  abaAct(10, "aba-spl", "SPL (Scholten Panelen)", "Industrie en Technologie", "B · Zuid", "Curacao 42, Apeldoorn", "verkoop@scholtenpanelen.nl", "055 505 14 41", "Pal tegenover De Cabinespecialist — combineer"),
-  abaAct(11, "aba-cabinespecialist", "De Cabinespecialist", "Industrie en Technologie", "B · Zuid", "Curacao 41, Apeldoorn", "info@cabinespecialist.nl", "055 533 48 77", "Pal tegenover SPL — combineer"),
-  abaAct(12, "aba-spelderholt", "Parc Spelderholt", "Maatschappelijke Organisaties", "B · Zuid", "Spelderholt 9, Beekbergen", "info@parcspelderholt.nl", "055 506 88 00", "Beekbergen, eindpunt van de zuidroute"),
+  abaAct(8, "aba-rtv", "RTV Apeldoorn", "Maatschappelijke Organisaties", "B · Zuid", "Arnhemseweg 82, Apeldoorn", "stationmanager@rtv-apeldoorn.nl", "055 533 51 66", "Contact: Theo Witlox"),
+  abaAct(9, "aba-vrm", "VRM (Van Reekum Materials)", "Industrie en Technologie", "B · Zuid", "Oude Apeldoornseweg 36, Apeldoorn", "f.padmos@vrm.nl", "055 533 54 66", "Contact: Fernando Padmos"),
+  abaAct(10, "aba-spl", "SPL (Scholten Panelen)", "Industrie en Technologie", "B · Zuid", "Curacao 42, Apeldoorn", "verkoop@scholtenpanelen.nl", "055 505 14 41", "Contact: Frans Kuijpers · Pal tegenover De Cabinespecialist — combineer"),
+  abaAct(11, "aba-cabinespecialist", "De Cabinespecialist", "Industrie en Technologie", "B · Zuid", "Curacao 41, Apeldoorn", "m.huiskamp@cabinespecialist.nl", "055 533 48 77", "Contact: Martijn & Hans Huiskamp · Pal tegenover SPL — combineer"),
+  abaAct(12, "aba-spelderholt", "Parc Spelderholt", "Maatschappelijke Organisaties", "B · Zuid", "Spelderholt 9, Beekbergen", "info@parcspelderholt.nl", "055 506 88 00", "Contact: Robert Porskamp · Beekbergen, eindpunt van de zuidroute"),
 
   // Cluster C — Noord & Oost (Kabath → STOOM → Peroli → Talen → Retro Empire, ±11 km)
-  abaAct(13, "aba-kabath", "De Kabath", "Groothandel en Dienstverlening", "C · Noord & Oost", "Kanaalpad 69, Apeldoorn", "info@dekabath.nl", "085 130 64 94", ""),
-  abaAct(14, "aba-stoom", "STOOM", "Horeca en Toerisme", "C · Noord & Oost", "Vlijtseweg 114, Apeldoorn", "sales@stoom-apeldoorn.nl", "06 14 46 81 82", "Ketelhuis Zwitsal-terrein"),
-  abaAct(15, "aba-peroli", "Peroli", "Starters", "C · Noord & Oost", "Lage Kamp 4, Apeldoorn", "info@peroli.nl", "06 28 26 99 10", ""),
-  abaAct(16, "aba-talen", "Talen Vastgoed", "Groothandel en Dienstverlening", "C · Noord & Oost", "Laan van de Kreeft 180, Apeldoorn", "info@talen.nl", "055 529 82 98", ""),
-  abaAct(17, "aba-retro-empire", "Retro Empire Gaming", "Starters", "C · Noord & Oost", "Eglantier 141, Apeldoorn (wc De Eglantier)", "info@retro-empire.nl", "06 34 00 75 74", "Winkelcentrum De Maten — slotstop van de noordroute"),
+  abaAct(13, "aba-kabath", "De Kabath", "Groothandel en Dienstverlening", "C · Noord & Oost", "Kanaalpad 69, Apeldoorn", "info@dekabath.nl", "085 130 64 94", "Contact: Joost Hamming"),
+  abaAct(14, "aba-stoom", "STOOM", "Horeca en Toerisme", "C · Noord & Oost", "Vlijtseweg 114, Apeldoorn", "info@stoom-apeldoorn.nl", "06 14 46 81 82", "Contact: Sabine de Jong & Chiel van Tongeren · Ketelhuis Zwitsal-terrein"),
+  abaAct(15, "aba-peroli", "Peroli", "Starters", "C · Noord & Oost", "Lage Kamp 4-2, Apeldoorn", "info@peroli.nl", "06 28 26 99 10", "Contact: Rudo Baksteen"),
+  abaAct(16, "aba-talen", "Talen Vastgoed", "Groothandel en Dienstverlening", "C · Noord & Oost", "Laan van de Kreeft 180, Apeldoorn", "info@talen.nl", "055 529 82 98", "Contact: Emiel Talen"),
+  abaAct(17, "aba-retro-empire", "Retro Empire Gaming", "Starters", "C · Noord & Oost", "Eglantier 141, Apeldoorn (wc De Eglantier)", "hr@retro-empire.nl", "06 34 00 75 74", "Contact: Remy & Judith van de Scheur · Winkelcentrum De Maten — slotstop van de noordroute"),
 
   // Cluster D — uitschieter west
-  abaAct(18, "aba-fonteyn", "De Fonteyn", "Detailhandel", "D · Uddel", "Meervelderweg 52, Uddel", "ishop@fonteyn.nl", "0577 456 040", "±20 min rijden — apart inplannen of aan een route vastplakken")
+  abaAct(18, "aba-fonteyn", "De Fonteyn", "Detailhandel", "D · Uddel", "Meervelderweg 52, Uddel", "dolf@fonteyn.nl", "0577 456 040", "Contact: Dolf Nieland · ±20 min rijden — apart inplannen of aan een route vastplakken"),
+  // Studenten (uit adressenlijst klant, 27 aug 2026)
+  abaAct(19, "aba-getnailed", "GetNailed JMC", "Studenten", "S · Studenten", "Molenstraat-Centrum 263, Apeldoorn", "info@getnailedjmc.nl", "-", "Contact: Jeppe Marce · Ligt in het centrum — kan makkelijk mee met Route A"),
+  abaAct(20, "aba-nxtlvl", "NXT LVL Dansstudio", "Studenten", "S · Studenten", "Leslocatie: GIGANT, Nieuwstraat 377, Apeldoorn", "info@nextleveldansstudio.nl", "-", "Contact: Daan Aggenbach · Eigen vestigingsadres niet gepubliceerd — filmen op leslocatie GIGANT (centrum)"),
+  abaAct(21, "aba-muteba", "Muteba Fitt", "Studenten", "S · Studenten", "Adres onbekend — opvragen bij ondernemer", "info@mutebafitt.com", "-", "Contact: Aaron Muteba Beya · Vestigingsadres niet gepubliceerd, eerst adres opvragen")
 ];
 
 const ABA_INFO = {
@@ -933,7 +937,7 @@ const ABA_INFO = {
     },
     {
       label: "Aandachtspunten",
-      text: "Sandmann Optiek is verhuisd: NIET Hoofdstraat maar Mariastraat 4. Maandag gesloten.\nTeun is een feestlocatie, alleen op afspraak open — zonder bevestiging niet langsgaan.\nHouse of Tall zit sinds feb 2026 op Brinklaan 9-11.\nSPL en De Cabinespecialist liggen tegenover elkaar — plan aansluitend.\nMailtekst van vorig jaar staat in Gmail: 'Apeldoorn Business Awards 2025: Video' (12 sep 2025, BCC aan alle genomineerden)."
+      text: "Contactpersonen en e-mailadressen komen uit de adressenlijst van de klant (27 aug 2026) — die is leidend.\nSandmann Optiek is verhuisd: NIET Hoofdstraat maar Mariastraat 4. Maandag gesloten.\nTeun is een feestlocatie, alleen op afspraak open — zonder bevestiging niet langsgaan.\nHouse of Tall zit sinds feb 2026 op Brinklaan 9-11.\nSPL en De Cabinespecialist liggen tegenover elkaar — plan aansluitend.\nStudenten: GetNailed JMC en NXT LVL (leslocatie GIGANT) zitten allebei in het centrum — kunnen mee met Route A. Muteba Fitt: eerst adres opvragen.\nConcept-mail 2026 staat klaar in Gmail Drafts (BCC volgens klantlijst)."
     }
   ]
 };
@@ -946,7 +950,7 @@ const PROJECTS = [
   {
     id: "aba-2026",
     name: "Apeldoorn Business Awards 2026",
-    subtitle: "18 genomineerden · 4 routes vanaf Oranjelaan 2 · gemaild → bevestigd → gefilmd",
+    subtitle: "18 genomineerden + 3 studenten · routes vanaf Oranjelaan 2 · gemaild → bevestigd → gefilmd",
     icon: "🏆",
     stateKey: "aba2026_v1",
     doneMode: "all", // bedrijf pas klaar als gemaild + bevestigd + gefilmd
