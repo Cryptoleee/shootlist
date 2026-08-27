@@ -594,6 +594,25 @@ function renderActCard(act) {
   // bepaal dagen voor meta
   const days = [...new Set(slotsToShow.map(s => s.day))];
 
+  // stappen-voortgang (alleen bij doneMode "all" met meerdere slots):
+  // gesegmenteerde balk + huidig stadium, zodat je in één oogopslag ziet hoe ver je bent
+  let stepBar = "";
+  if (project.doneMode === "all" && act.slots.length > 1) {
+    const checked = act.slots.map((_, i) => isSlotDone(state, act.id, i));
+    const nDone = checked.filter(Boolean).length;
+    let lastLabel = "";
+    for (let i = act.slots.length - 1; i >= 0; i--) {
+      if (checked[i]) { lastLabel = act.slots[i].time; break; }
+    }
+    const label = nDone === 0 ? "" :
+      (lastLabel.length <= 14 ? lastLabel : `${nDone}/${act.slots.length}`);
+    stepBar = `
+      <div class="step-progress${nDone > 0 ? " active" : ""}">
+        <div class="step-segs">${checked.map(c => `<span class="${c ? "on" : ""}"></span>`).join("")}</div>
+        ${label ? `<span class="step-label">${escapeHtml(label)}</span>` : ""}
+      </div>`;
+  }
+
   card.innerHTML = `
     ${crew ? `<div class="assign-strip" style="background:${crew.color}; color:${textOn(crew.color)}">${escapeHtml(crew.name)}</div>` : ""}
     <div class="act-header">
@@ -608,6 +627,7 @@ function renderActCard(act) {
           ${multiDay ? `<span class="meta-days">${days.map(d => dayLabel(d)).join(" · ")}</span>` : ""}
           <span class="meta-loc">${escapeHtml(act.location)}</span>
         </div>
+        ${stepBar}
       </div>
     </div>
     <div class="slots"></div>
