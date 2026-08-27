@@ -864,10 +864,102 @@ const UNIVE_INFO = {
 };
 
 // ============================================================
+// KLUS 4: Apeldoorn Business Awards 2026 (bedrijfsbezoeken)
+// 18 genomineerden, geclusterd op geografie vanaf startpunt
+// Oranjelaan 2. Adressen geverifieerd via bedrijfssites + officiële
+// stemlijst (stemmen.apeldoornbusinessawards.nl), geocodering OSM.
+// Per bedrijf 3 statussen: Gemaild → Bevestigd → Gefilmd (doneMode all).
+// act.order = routevolgorde (sortering 'Tijd' volgt deze volgorde).
+// ============================================================
+
+function abaAct(order, id, name, cat, cluster, addr, email, tel, note) {
+  return {
+    id, order,
+    name,
+    priority: "normal",
+    location: `${cluster} — ${addr}`,
+    slots: [
+      { day: "dag", time: "Gemaild" },
+      { day: "dag", time: "Bevestigd" },
+      { day: "dag", time: "Gefilmd" }
+    ],
+    note: `${cat} · ${email} · ${tel}${note ? " · " + note : ""}`
+  };
+}
+
+const ABA_ACTS = [
+  // Cluster A — Centrum (alles op loopafstand van Oranjelaan 2, ±2 km totaal)
+  abaAct(1, "aba-de-kap", "De Kap", "Maatschappelijke Organisaties", "A · Centrum", "Regentesselaan 2B, Apeldoorn", "info@dekap.nl", "055 529 55 20", "300 m van je startpunt"),
+  abaAct(2, "aba-zenzez", "ZenZeZ Hotel & Lounge", "Horeca en Toerisme", "A · Centrum", "Canadalaan 26, Apeldoorn", "info@zenzezhotel.nl", "055 522 24 33", ""),
+  abaAct(3, "aba-tm-vastgoed", "TM Vastgoedpromotie", "Starters", "A · Centrum", "Paslaan 9, Apeldoorn", "info@tmvastgoedpromotie.nl", "055 234 08 10", ""),
+  abaAct(4, "aba-teun", "Teun", "Horeca en Toerisme", "A · Centrum", "Kapelstraat 5, Apeldoorn", "info@teunapeldoorn.nl", "06 20 69 02 06", "Feestlocatie, alleen op afspraak open — afspraak dus essentieel"),
+  abaAct(5, "aba-mr-boost", "Mr Boost", "Groothandel en Dienstverlening", "A · Centrum", "Leienplein 5, Apeldoorn", "mail@mrboost.nl", "06 37 34 45 70", ""),
+  abaAct(6, "aba-sandmann", "Sandmann Optiek", "Detailhandel", "A · Centrum", "Mariastraat 4, Apeldoorn", "blij@sandmannoptiek.nl", "055 521 74 67", "LET OP: verhuisd van Hoofdstraat naar Mariastraat 4; maandag gesloten"),
+  abaAct(7, "aba-house-of-tall", "House of Tall", "Detailhandel", "A · Centrum", "Brinklaan 9-11, Apeldoorn", "apeldoorn@houseoftall.nl", "055 301 77 23", "Nieuwe winkel (sinds feb 2026)"),
+
+  // Cluster B — Zuid (RTV → VRM → SPL → Cabinespecialist → Spelderholt, ±10 km)
+  abaAct(8, "aba-rtv", "RTV Apeldoorn", "Maatschappelijke Organisaties", "B · Zuid", "Arnhemseweg 82, Apeldoorn", "redactie@rtv-apeldoorn.nl", "055 533 51 66", ""),
+  abaAct(9, "aba-vrm", "VRM (Van Reekum Materials)", "Industrie en Technologie", "B · Zuid", "Oude Apeldoornseweg 36, Apeldoorn", "info@vrm.nl", "055 533 54 66", ""),
+  abaAct(10, "aba-spl", "SPL (Scholten Panelen)", "Industrie en Technologie", "B · Zuid", "Curacao 42, Apeldoorn", "verkoop@scholtenpanelen.nl", "055 505 14 41", "Pal tegenover De Cabinespecialist — combineer"),
+  abaAct(11, "aba-cabinespecialist", "De Cabinespecialist", "Industrie en Technologie", "B · Zuid", "Curacao 41, Apeldoorn", "info@cabinespecialist.nl", "055 533 48 77", "Pal tegenover SPL — combineer"),
+  abaAct(12, "aba-spelderholt", "Parc Spelderholt", "Maatschappelijke Organisaties", "B · Zuid", "Spelderholt 9, Beekbergen", "info@parcspelderholt.nl", "055 506 88 00", "Beekbergen, eindpunt van de zuidroute"),
+
+  // Cluster C — Noord & Oost (Kabath → STOOM → Peroli → Talen → Retro Empire, ±11 km)
+  abaAct(13, "aba-kabath", "De Kabath", "Groothandel en Dienstverlening", "C · Noord & Oost", "Kanaalpad 69, Apeldoorn", "info@dekabath.nl", "085 130 64 94", ""),
+  abaAct(14, "aba-stoom", "STOOM", "Horeca en Toerisme", "C · Noord & Oost", "Vlijtseweg 114, Apeldoorn", "sales@stoom-apeldoorn.nl", "06 14 46 81 82", "Ketelhuis Zwitsal-terrein"),
+  abaAct(15, "aba-peroli", "Peroli", "Starters", "C · Noord & Oost", "Lage Kamp 4, Apeldoorn", "info@peroli.nl", "06 28 26 99 10", ""),
+  abaAct(16, "aba-talen", "Talen Vastgoed", "Groothandel en Dienstverlening", "C · Noord & Oost", "Laan van de Kreeft 180, Apeldoorn", "info@talen.nl", "055 529 82 98", ""),
+  abaAct(17, "aba-retro-empire", "Retro Empire Gaming", "Starters", "C · Noord & Oost", "Eglantier 141, Apeldoorn (wc De Eglantier)", "info@retro-empire.nl", "06 34 00 75 74", "Winkelcentrum De Maten — slotstop van de noordroute"),
+
+  // Cluster D — uitschieter west
+  abaAct(18, "aba-fonteyn", "De Fonteyn", "Detailhandel", "D · Uddel", "Meervelderweg 52, Uddel", "ishop@fonteyn.nl", "0577 456 040", "±20 min rijden — apart inplannen of aan een route vastplakken")
+];
+
+const ABA_INFO = {
+  title: "ABA 2026 — routes vanaf Oranjelaan 2",
+  groups: [
+    {
+      label: "Routes (open in Google Maps)",
+      links: [
+        { label: "Route A · Centrum (7 stops, 2 km — lopend/fiets)", url: "https://www.google.com/maps/dir/Oranjelaan+2,+Apeldoorn/Regentesselaan+2B,+Apeldoorn/Canadalaan+26,+Apeldoorn/Paslaan+9,+Apeldoorn/Kapelstraat+5,+Apeldoorn/Leienplein+5,+Apeldoorn/Mariastraat+4,+Apeldoorn/Brinklaan+9,+Apeldoorn" },
+        { label: "Route B · Zuid (5 stops, 10 km)", url: "https://www.google.com/maps/dir/Oranjelaan+2,+Apeldoorn/Arnhemseweg+82,+Apeldoorn/Oude+Apeldoornseweg+36,+Apeldoorn/Curacao+42,+Apeldoorn/Curacao+41,+Apeldoorn/Spelderholt+9,+Beekbergen" },
+        { label: "Route C · Noord & Oost (5 stops, 11 km)", url: "https://www.google.com/maps/dir/Oranjelaan+2,+Apeldoorn/Kanaalpad+69,+Apeldoorn/Vlijtseweg+114,+Apeldoorn/Lage+Kamp+4,+Apeldoorn/Laan+van+de+Kreeft+180,+Apeldoorn/Eglantier+141,+Apeldoorn" },
+        { label: "Route D · De Fonteyn, Uddel (13 km)", url: "https://www.google.com/maps/dir/Oranjelaan+2,+Apeldoorn/Meervelderweg+52,+Uddel" }
+      ]
+    },
+    {
+      label: "Dagindeling (voorstel)",
+      text: "Dag 1 — Route A · Centrum: 7 bedrijven op loopafstand, à 45 min ben je de dag zoet.\nDag 2 — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nDag 3 — Route C · Noord & Oost: De Kabath → STOOM → Peroli → Talen → Retro Empire.\nDe Fonteyn (Uddel, 20 min): apart moment of als vroege start vóór een route.\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
+    },
+    {
+      label: "Aandachtspunten",
+      text: "Sandmann Optiek is verhuisd: NIET Hoofdstraat maar Mariastraat 4. Maandag gesloten.\nTeun is een feestlocatie, alleen op afspraak open — zonder bevestiging niet langsgaan.\nHouse of Tall zit sinds feb 2026 op Brinklaan 9-11.\nSPL en De Cabinespecialist liggen tegenover elkaar — plan aansluitend.\nMailtekst van vorig jaar staat in Gmail: 'Apeldoorn Business Awards 2025: Video' (12 sep 2025, BCC aan alle genomineerden)."
+    }
+  ]
+};
+
+// ============================================================
 // PROJECT-REGISTER
 // ============================================================
 
 const PROJECTS = [
+  {
+    id: "aba-2026",
+    name: "Apeldoorn Business Awards 2026",
+    subtitle: "18 genomineerden · 4 routes vanaf Oranjelaan 2 · gemaild → bevestigd → gefilmd",
+    icon: "🏆",
+    stateKey: "aba2026_v1",
+    doneMode: "all", // bedrijf pas klaar als gemaild + bevestigd + gefilmd
+    days: [
+      { key: "dag", label: "Planning" }
+    ],
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },
+      { id: "jason", name: "Jason", color: "#5b9bff", soft: "" }
+    ],
+    info: ABA_INFO,
+    acts: ABA_ACTS
+  },
   {
     id: "unive",
     name: "Univé adviseursvideo's",
