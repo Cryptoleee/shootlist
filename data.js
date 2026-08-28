@@ -58,7 +58,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "14:00 – 15:15" },
       { day: "za", time: "20:00 – 21:15" }
     ],
-    note: "STORY: beeld bij start vr 20:00 direct appen. Korte optredens uit theaterseizoen '26-'27 — briefing-highlight."
+    note: "STORY: beeld bij start vr 20:00 direct appen. Korte optredens uit theaterseizoen '26-'27 — briefing-highlight. WETHOUDER za bij de 20:00-show aanwezig."
   },
   {
     id: "vier-de-vrijdag",
@@ -91,7 +91,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "Alex Barti Show — 12:00, 13:45, 15:30 (Grote Markthof)" },
       { day: "za", time: "Smallest Show on Earth — 13:00, 14:30, 15:30 (mobiel)" }
     ],
-    note: "NIET alles nodig: 1 à 2 acts pakken is genoeg, dit zijn alle kansen van de middag. STORY: briefing zegt 12:30 parkje Marktstraat, maar volgens theaterindestad.nl starten de eerste acts al om 12:00."
+    note: "NIET alles nodig: 1 à 2 acts pakken is genoeg, dit zijn alle kansen van de middag. STORY: briefing zegt 12:30 parkje Marktstraat, maar volgens theaterindestad.nl starten de eerste acts al om 12:00. WETHOUDER za 13:30–13:40 bij Animal Love (Marktstraat) en 13:40–13:50 bij Smallest Show on Earth (Grote Markthof)."
   },
   {
     id: "apoppoldro",
@@ -102,7 +102,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "13:00 – 14:00 (parkje Marktstraat)" },
       { day: "za", time: "14:30 – 15:00 (Grote Kerk)" }
     ],
-    note: "STORY: beeld bij start 13:00 direct appen. Tweede kans in de Grote Kerk."
+    note: "STORY: beeld bij start 13:00 direct appen. Tweede kans in de Grote Kerk. WETHOUDER za 13:20–13:30 bij het koor (programma wethouder noemt Grote Markthof)."
   },
   {
     id: "linedance",
@@ -117,6 +117,16 @@ const DE_OPENING_ACTS = [
     note: "STORY: briefing zegt 13:30 Paslaan — klopt binnen het blok, maar start is al 13:00 (flyer + site). Om 13:30 zit je sowieso goed op de Paslaan."
   },
   {
+    id: "frankey-onthulling",
+    name: "Onthulling kunstwerk Streetart Frankey",
+    priority: "high",
+    location: "Grote Markthof",
+    slots: [
+      { day: "za", time: "14:00 – 14:10 (onthulling door wethouder)" }
+    ],
+    note: "Uit programma wethouder: onthulling/unboxing kunstwerk door Streetart Frankey, wethouder heeft actieve rol — nieuwsmoment. LET OP: valt samen met de start van de Grande Parade (14:00 bij ACEC) — splitsen met tweede cameraman of parade iets later oppakken (loopt 14:10–14:30 zelf langs de Grote Markthof-route)."
+  },
+  {
     id: "grande-parade",
     name: "Grande Parade",
     priority: "high",
@@ -124,7 +134,7 @@ const DE_OPENING_ACTS = [
     slots: [
       { day: "za", time: "14:00 – 15:00" }
     ],
-    note: "STORY: beeld bij start 14:00 bij ACEC direct appen. Optocht van dieren/karakters door de binnenstad — briefing-highlight, ook voor kinderen-beeld."
+    note: "STORY: beeld bij start 14:00 bij ACEC direct appen. Optocht van dieren/karakters door de binnenstad — briefing-highlight, ook voor kinderen-beeld. WETHOUDER loopt za 14:10–14:30 met de parade mee richting Binnenstad-Noord."
   },
   {
     id: "acec-kinderconcert",
@@ -135,7 +145,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "Kinderconcert — 14:30" },
       { day: "za", time: "Showcase Orkest De Ereprijs — 17:00" }
     ],
-    note: "STORY: beeld bij start 14:30 direct appen."
+    note: "STORY: beeld bij start 14:30 direct appen. WETHOUDER za 14:30–14:50 bij het kinderconcert."
   },
   {
     id: "njon-stallenplein",
@@ -166,7 +176,7 @@ const DE_OPENING_ACTS = [
     slots: [
       { day: "za", time: "16:15 – 16:45" }
     ],
-    note: "STORY: beeld bij start 16:15 direct appen. Meezingmoment — publiek in beeld!"
+    note: "STORY: beeld bij start 16:15 direct appen. Meezingmoment — publiek in beeld! WETHOUDER za 16:30–16:45 aanwezig op het Caterplein."
   },
   {
     id: "mensen-zeggen-dingen",
@@ -212,7 +222,8 @@ const DE_OPENING_ACTS = [
     location: "Caterplein, buitenpodium",
     slots: [
       { day: "za", time: "17:00 & 18:00" }
-    ]
+    ],
+    note: "WETHOUDER za 17:00–17:30 aanwezig (bij de 17:00-show)."
   },
   {
     id: "hollandse-hits",
@@ -267,7 +278,8 @@ const DE_OPENING_ACTS = [
     location: "Grote Kerk",
     slots: [
       { day: "za", time: "16:00 – 16:30" }
-    ]
+    ],
+    note: "WETHOUDER za 16:00–16:20 bij het optreden in de Grote Kerk."
   },
   {
     id: "kindertheateractiviteit",
@@ -495,7 +507,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "Doorlopend" },
       { day: "zo", time: "Doorlopend" }
     ],
-    note: "ALLEEN fotograferen mét mensen die echt naar het kunstwerk in de etalage kijken (anders niet) — etalage en omgeving herkenbaar in beeld."
+    note: "ALLEEN fotograferen mét mensen die echt naar het kunstwerk in de etalage kijken (anders niet) — etalage en omgeving herkenbaar in beeld. WETHOUDER za 13:00–13:20 Binnenstad-Zuid (o.a. Guusje, Nawijn & Polak, Flierefluiter) en 14:20–14:30 Binnenstad-Noord (Lab02, Koafe, Bar Goût, Alfred Kookt) langs de etalages."
   },
   {
     id: "pim-pom",
@@ -531,7 +543,7 @@ const DE_OPENING_ACTS = [
       { day: "za", time: "Open 10:00 – 17:00 (gratis toegang)" },
       { day: "zo", time: "Open 10:00 / 11:00 – 17:00" }
     ],
-    note: "Kroon op de taart! (kids), PRISMA — De keuze van Rikkie Kollé, WINWIN Hester Oerlemans, Cinema Khing, Mini-uitgeverij. Kunst-highlight: verwonderende bezoekers in beeld."
+    note: "Kroon op de taart! (kids), PRISMA — De keuze van Rikkie Kollé, WINWIN Hester Oerlemans, Cinema Khing, Mini-uitgeverij. Kunst-highlight: verwonderende bezoekers in beeld. WETHOUDER za 15:00–15:50 bij CODA: prijsuitreiking WRYTA aan Merlijn Toby (actieve rol) — fotomoment."
   },
   {
     id: "verenigde-apeldoorners",
