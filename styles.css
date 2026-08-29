@@ -560,6 +560,97 @@ body.home-mode .back-btn { display: none; }
 .priority-badge.high { background: var(--volt-dim); color: var(--volt); }
 .priority-badge.conditional { background: var(--amber-soft); color: var(--amber); }
 
+/* Ingeklapte afgeronde/voorbije kaart: compacte regel */
+.act-card.collapsed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.act-card.collapsed:active { transform: scale(0.985); }
+.act-card.collapsed .act-check {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  margin-top: 0;
+}
+.act-card.collapsed .c-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: line-through;
+  text-decoration-color: var(--volt);
+}
+.act-card.collapsed.c-past .c-title { text-decoration-color: var(--muted); color: var(--muted); }
+.act-card.collapsed .c-state {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #2ee07c;
+  flex-shrink: 0;
+}
+.act-card.collapsed.c-past .c-state { color: var(--muted); }
+.act-card.collapsed .c-chev {
+  color: var(--muted);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* uitklap-knop op een uitgeklapte afgeronde kaart */
+.collapse-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--card-2);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 2px;
+  transition: transform 0.15s var(--pop);
+}
+.collapse-btn:active { transform: scale(0.88); }
+
+/* scheidingsbalk boven de afgeronde items */
+.done-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 4px 2px;
+}
+.done-divider .dd-line { flex: 1; height: 1px; background: var(--line-strong); }
+.done-divider .dd-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.done-divider .dd-count {
+  background: rgba(46,224,124,0.14);
+  color: #2ee07c;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
 /* Stappen-voortgang op de kaart (bv. gemaild → bevestigd → gefilmd) */
 .step-progress {
   display: flex;

@@ -185,6 +185,9 @@ function isActPast(act) {
 // welke check net is aangetikt → krijgt een pop-animatie na re-render
 let lastPop = null;
 
+// afgeronde/voorbije kaarten die de gebruiker tijdelijk heeft uitgeklapt
+let expandedCards = new Set();
+
 function toggleSlot(actId, idx) {
   const k = slotKey(actId, idx);
   const nowOn = !entryVal(state.slots, k);
@@ -257,6 +260,7 @@ function openProject(id) {
   if (!p) return showHome();
   project = p;
   state = loadState(p);
+  expandedCards = new Set();
   document.body.classList.remove("home-mode");
   document.getElementById("appTitle").textContent = p.name;
 
@@ -566,7 +570,18 @@ function renderList() {
     container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--muted);">Geen acts in deze filter.</div>`;
     return;
   }
+  // scheidingsbalk vóór het eerste afgeronde/voorbije item
+  const outCount = acts.filter(a => isActDone(a) || isActPast(a)).length;
+  let dividerPlaced = false;
   acts.forEach((act, i) => {
+    const out = isActDone(act) || isActPast(act);
+    if (out && !dividerPlaced) {
+      const div = document.createElement("div");
+      div.className = "done-divider";
+      div.innerHTML = `<span class="dd-line"></span><span class="dd-label">Afgerond / voorbij</span><span class="dd-count">${outCount}</span><span class="dd-line"></span>`;
+      container.appendChild(div);
+      dividerPlaced = true;
+    }
     const card = renderActCard(act);
     card.style.setProperty("--i", Math.min(i, 8));
     container.appendChild(card);
@@ -577,8 +592,31 @@ function renderList() {
 function renderActCard(act) {
   const done = isActDone(act);
   const past = !done && isActPast(act);
+  const out = done || past;
   const multiDay = project.days.length > 1;
   const crew = crewOf(act);
+
+  // afgerond/voorbij en niet handmatig uitgeklapt → compacte regel
+  if (out && !expandedCards.has(act.id)) {
+    const row = document.createElement("div");
+    row.className = "act-card collapsed" + (done ? " c-done" : " c-past");
+    if (crew) row.style.borderColor = `color-mix(in srgb, ${crew.color} 40%, var(--line))`;
+    row.innerHTML = `
+      <div class="act-check ${done ? "checked" : ""}" data-toggle="${act.id}">✓</div>
+      <span class="c-title">${escapeHtml(act.name)}</span>
+      <span class="c-state">${done ? "klaar" : "voorbij"}</span>
+      <span class="c-chev">▾</span>`;
+    row.querySelector('[data-toggle]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAct(act);
+    });
+    row.addEventListener('click', () => {
+      expandedCards.add(act.id);
+      render();
+    });
+    return row;
+  }
+
   const card = document.createElement("div");
   card.className = "act-card" + (done ? " done" : "") + (past ? " past" : "") + (crew ? " assigned" : "");
   if (crew) {
@@ -632,6 +670,7 @@ function renderActCard(act) {
         </div>
         ${stepBar}
       </div>
+      ${out ? `<button class="collapse-btn" data-collapse title="Inklappen">▴</button>` : ""}
     </div>
     <div class="slots"></div>
     ${noteText(act.id) ? `<div class="note-preview">${escapeHtml(noteText(act.id))}</div>` : ""}
@@ -671,6 +710,14 @@ function renderActCard(act) {
   });
   card.querySelector('[data-details]').addEventListener('click', () => openModal(act));
   card.querySelector('[data-open-act]').addEventListener('click', () => openModal(act));
+  const collapseBtn = card.querySelector('[data-collapse]');
+  if (collapseBtn) {
+    collapseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      expandedCards.delete(act.id);
+      render();
+    });
+  }
 
   return card;
 }
