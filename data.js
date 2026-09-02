@@ -955,10 +955,205 @@ const ABA_INFO = {
 };
 
 // ============================================================
+// KLUS 5: De Passerel — onboarding-/wervingsvideo's
+// Bron: "Onboarding script AH" (3 scripts: welkomstvideo ±3:30,
+// De Passerel in 1 minuut, wervingsvideo ±1:20) + draaidagen klant.
+// Shots per locatie gegroepeerd zodat je voor alle 3 video's
+// tegelijk schiet. Overal 30 min vooraf aanwezig.
+// ============================================================
+
+const PASSEREL_ACTS = [
+  // ---------- MA 8 SEP · ORDEN (Wonen / volwassenen) ----------
+  {
+    id: "ps-orden-setup", order: 1,
+    name: "Orden — aankomst & opbouw",
+    priority: "normal",
+    location: "Ordenplein 56, Apeldoorn",
+    slots: [ { day: "d8", time: "14:30 aanwezig · filmen 15:00 – 19:00" } ],
+    note: "Wonen / volwassenenzorg. Kennismaken met begeleiders en bewoners vóór je draait — rustig opstarten werkt hier het best."
+  },
+  {
+    id: "ps-orden-begeleiding", order: 2,
+    name: "Orden — begeleiding (kernshots)",
+    priority: "high",
+    location: "Ordenplein 56 — woonsetting",
+    slots: [
+      { day: "d8", time: "Warm contact close-up: hand op schouder, oogcontact, kleine glimlach (opener 1-min video)" },
+      { day: "d8", time: "Dagelijks moment: begeleider helpt cliënt (ontbijt/avondeten, jas aantrekken, activiteit starten)" },
+      { day: "d8", time: "Eén-op-één begeleiding: aandachtig luisteren, bevestigende knik, kleine lach" },
+      { day: "d8", time: "Geduld & groei: begeleider wacht bewust, cliënt zet zelf een stap — iets lukt, hoe klein ook" },
+      { day: "d8", time: "Structuur & vertrouwen: begeleider legt uit, helpt bij planning — rustige stabiele shots" }
+    ],
+    note: "Dit zijn de dragende beelden van alle 3 de video's. Rustig gefilmd, geen snelle montagebeelden."
+  },
+  {
+    id: "ps-orden-momenten", order: 3,
+    name: "Orden — kleine momenten & sfeer",
+    priority: "high",
+    location: "Ordenplein 56 — binnen & buiten",
+    slots: [
+      { day: "d8", time: "Goed gesprek: zittend naast elkaar" },
+      { day: "d8", time: "Samen iets maken of koken" },
+      { day: "d8", time: "Korte wandeling / gezamenlijke lach" },
+      { day: "d8", time: "Doelgroep-shot: volwassene in woonsetting of gesprek (voor doelgroepen-sequentie)" },
+      { day: "d8", time: "Eindshot-optie: medewerker en cliënt samen, weglopend of naast elkaar (ruimte voor logo)" }
+    ]
+  },
+  {
+    id: "ps-orden-team", order: 4,
+    name: "Orden — team & echte werkmomenten",
+    priority: "high",
+    location: "Ordenplein 56",
+    slots: [
+      { day: "d8", time: "Teamoverleg / korte interactie tussen collega's" },
+      { day: "d8", time: "Ontspannen teammoment: koffie, samen lachen" },
+      { day: "d8", time: "Inwerkmoment: iemand wordt op weg geholpen (voor wervingsvideo)" },
+      { day: "d8", time: "Eerlijk moment: iets gaat mis / improviseren → daarna lach (opening wervingsvideo)" }
+    ],
+    note: "De wervingsvideo opent met 'niet altijd perfect' — vang bewust een onhandig/echt moment mét de lach erna."
+  },
+  {
+    id: "ps-orden-interview", order: 5,
+    name: "Orden — interview",
+    priority: "high",
+    location: "Ordenplein 56 — rustige plek",
+    slots: [
+      { day: "d8", time: "Interview medewerker en/of cliënt volwassenenzorg (±15–20 sec bruikbaar)" },
+      { day: "d8", time: "1–2 korte quotes over meedoen in de wijk / er zijn voor elkaar" }
+    ]
+  },
+
+  // ---------- DI 9 SEP · HET MATENVELD (Dagbesteding) ----------
+  {
+    id: "ps-maten-setup", order: 6,
+    name: "Matenveld — aankomst & opbouw",
+    priority: "normal",
+    location: "Rakkersveld 313, Apeldoorn",
+    slots: [ { day: "d9", time: "09:30 aanwezig · filmen 10:00 – 13:00" } ],
+    note: "Dagbesteding — ochtendactiviteiten lopen dan al, dus direct sfeer te pakken."
+  },
+  {
+    id: "ps-maten-dagbesteding", order: 7,
+    name: "Matenveld — dagbesteding in actie",
+    priority: "high",
+    location: "Rakkersveld 313",
+    slots: [
+      { day: "d9", time: "Creatieve activiteit: cliënt doet wat hij/zij leuk vindt en goed kan" },
+      { day: "d9", time: "Werken op een beschutte plek" },
+      { day: "d9", time: "Succesmoment: iets lukt — blik van trots/vertrouwen" },
+      { day: "d9", time: "Doelgroep-shot dagbesteding: creatief of werkmoment (voor doelgroepen-sequentie)" },
+      { day: "d9", time: "Begeleider start activiteit / helpt op weg" }
+    ]
+  },
+  {
+    id: "ps-maten-interview", order: 8,
+    name: "Matenveld — interview",
+    priority: "high",
+    location: "Rakkersveld 313 — rustige plek",
+    slots: [
+      { day: "d9", time: "Interview medewerker + cliënt samen (±15 sec bruikbaar)" }
+    ]
+  },
+  {
+    id: "ps-maten-team", order: 9,
+    name: "Matenveld — team & sfeer",
+    priority: "high",
+    location: "Rakkersveld 313",
+    slots: [
+      { day: "d9", time: "Kort overleg / schakelen tussen collega's" },
+      { day: "d9", time: "Samen lachen / ontspannen moment" },
+      { day: "d9", time: "Eerlijk moment: dag loopt anders dan gepland → improviseren" }
+    ]
+  },
+
+  // ---------- DI 15 SEP · AVENTURIJN (Kind, Jeugd en Gezin) ----------
+  {
+    id: "ps-avent-setup", order: 10,
+    name: "Aventurijn — aankomst & opbouw",
+    priority: "normal",
+    location: "Kanaal Noord 350C, Apeldoorn (Aquamarijn & Serpentijn)",
+    slots: [ { day: "d15", time: "13:30 aanwezig · filmen 14:00 – 17:00" } ],
+    note: "Kind, Jeugd en Gezin — twee groepen: Aquamarijn & Serpentijn."
+  },
+  {
+    id: "ps-avent-kind", order: 11,
+    name: "Aventurijn — kind & jeugd",
+    priority: "high",
+    location: "Kanaal Noord 350C",
+    slots: [
+      { day: "d15", time: "Kind in begeleiding of spel" },
+      { day: "d15", time: "Ontwikkelmoment: extra hulp, kind ontwikkelt zich op eigen manier — iets lukt" },
+      { day: "d15", time: "Korte sfeerbeelden kinderen (±10–15 sec bruikbaar voor welkomstvideo)" },
+      { day: "d15", time: "Structuurmoment: begeleider legt uit / dagritme" },
+      { day: "d15", time: "Doelgroep-shot kind (voor doelgroepen-sequentie)" }
+    ],
+    note: "EXTRA ALERT op toestemming: kinderen herkenbaar in beeld alleen met akkoord ouders/verzorgers — vooraf checken met de locatie."
+  },
+  {
+    id: "ps-avent-interview", order: 12,
+    name: "Aventurijn — interview",
+    priority: "high",
+    location: "Kanaal Noord 350C — rustige plek",
+    slots: [
+      { day: "d15", time: "Interview medewerker kind & jeugd (±10–15 sec bruikbaar)" }
+    ]
+  },
+  {
+    id: "ps-avent-team", order: 13,
+    name: "Aventurijn — team & afsluiting",
+    priority: "high",
+    location: "Kanaal Noord 350C",
+    slots: [
+      { day: "d15", time: "Teammoment / overleg" },
+      { day: "d15", time: "Eindshot-optie: medewerker + cliënt, warme blik (slot wervings- en 1-min video)" },
+      { day: "d15", time: "Restshots checken: wat mist er nog uit de 3 scripts? (laatste draaidag!)" }
+    ],
+    note: "Dit is de laatste draaidag — loop vooraf de shotlijst van alle drie de locaties na op gaten."
+  }
+];
+
+const PASSEREL_INFO = {
+  title: "De Passerel — 3 video's, 3 draaidagen",
+  groups: [
+    {
+      label: "Draaidagen",
+      text: "Ma 8 sep · Orden (Wonen) — Ordenplein 56, Apeldoorn · aanwezig 14:30, filmen 15:00–19:00\nDi 9 sep · Het Matenveld (Dagbesteding) — Rakkersveld 313, Apeldoorn · aanwezig 09:30, filmen 10:00–13:00\nDi 15 sep · Aventurijn (Kind, Jeugd en Gezin — Aquamarijn & Serpentijn) — Kanaal Noord 350C, Apeldoorn · aanwezig 13:30, filmen 14:00–17:00"
+    },
+    {
+      label: "De 3 video's uit het script",
+      text: "1. Welkomst-/onboardingvideo (±3:15–3:45): voice-over + per doelgroep beeld en kort interview; eindigt met 'je staat er niet alleen voor' (team/inwerk-beelden).\n2. De Passerel in 1 minuut: rustige, warme shots — warm contact, dagelijkse begeleiding, geduld & groei, doelgroepen-sequentie (kind/volwassene/dagbesteding), kleine momenten, teammoment, eindshot met logo.\n3. Wervingsvideo (±1:20): eerlijk & herkenbaar — imperfecte momenten mét lach, schakelen, succesmomentje, doelgroepen, inwerken; slogan 'niet 100% perfect, wel de leukste baan of stage van de wereld' + Werkenbijdepasserel.nl."
+    },
+    {
+      label: "Aandachtspunten",
+      text: "Toestemming: zorglocaties — check per locatie wie herkenbaar in beeld mag; bij Aventurijn (kinderen) alleen met akkoord van ouders/verzorgers.\nHet script noemt ook beelden van 'Meedoen in de wijk / Buurtwinkel (Epe)' en locaties Aalscholver en Doggersbank — daar is GEEN draaidag voor gepland. Check bij De Passerel of die beelden vervallen, aangeleverd worden of dat er een extra moment komt.\nInterviews: overal een rustige plek regelen; quotes kort houden (10–20 sec bruikbaar).\nStijl: rustig, warm, geen snelle montagebeelden — de kracht zit in kleine echte momenten."
+    }
+  ]
+};
+
+// ============================================================
 // PROJECT-REGISTER
 // ============================================================
 
 const PROJECTS = [
+  {
+    id: "passerel",
+    name: "De Passerel",
+    subtitle: "Onboarding-, 1-minuut- en wervingsvideo · 3 draaidagen · 8, 9 en 15 sep",
+    icon: "🤝",
+    stateKey: "passerel_v1",
+    doneMode: "all", // alle shots per blok nodig
+    days: [
+      { key: "d8", label: "Ma 8 sep", date: "2026-09-08" },
+      { key: "d9", label: "Di 9 sep", date: "2026-09-09" },
+      { key: "d15", label: "Di 15 sep", date: "2026-09-15" }
+    ],
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },
+      { id: "cam2", name: "Cameraman 2", color: "#5b9bff", soft: "" }
+    ],
+    info: PASSEREL_INFO,
+    acts: PASSEREL_ACTS
+  },
   {
     id: "aba-2026",
     name: "Apeldoorn Business Awards 2026",
