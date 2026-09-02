@@ -996,6 +996,7 @@ const PASSEREL_ACTS = [
       { day: "d8", time: "Samen iets maken of koken" },
       { day: "d8", time: "Korte wandeling / gezamenlijke lach" },
       { day: "d8", time: "Doelgroep-shot: volwassene in woonsetting of gesprek (voor doelgroepen-sequentie)" },
+      { day: "d8", time: "Meedoen in de wijk: cliënt buiten in de buurt — naar de winkel, praatje met buren (dekt het wijk-deel van het script)" },
       { day: "d8", time: "Eindshot-optie: medewerker en cliënt samen, weglopend of naast elkaar (ruimte voor logo)" }
     ]
   },
@@ -1125,7 +1126,7 @@ const PASSEREL_INFO = {
     },
     {
       label: "Aandachtspunten",
-      text: "Toestemming: zorglocaties — check per locatie wie herkenbaar in beeld mag; bij Aventurijn (kinderen) alleen met akkoord van ouders/verzorgers.\nHet script noemt ook beelden van 'Meedoen in de wijk / Buurtwinkel (Epe)' en locaties Aalscholver en Doggersbank — daar is GEEN draaidag voor gepland. Check bij De Passerel of die beelden vervallen, aangeleverd worden of dat er een extra moment komt.\nInterviews: overal een rustige plek regelen; quotes kort houden (10–20 sec bruikbaar).\nStijl: rustig, warm, geen snelle montagebeelden — de kracht zit in kleine echte momenten."
+      text: "Alles komt uit deze 3 draaidagen: de shots worden hergebruikt in alle video's die De Passerel vraagt. Locatienamen in het script (Aalscholver, Doggersbank, Buurtwinkel) zijn indicatief — Orden dekt wonen/volwassenen én wijk, Matenveld dagbesteding, Aventurijn kind & jeugd.\nToestemming: zorglocaties — check per locatie wie herkenbaar in beeld mag; bij Aventurijn (kinderen) alleen met akkoord van ouders/verzorgers.\nInterviews: overal een rustige plek regelen; quotes kort houden (10–20 sec bruikbaar).\nStijl: rustig, warm, geen snelle montagebeelden — de kracht zit in kleine echte momenten."
     }
   ]
 };
