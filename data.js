@@ -1132,10 +1132,128 @@ const PASSEREL_INFO = {
 };
 
 // ============================================================
+// KLUS 6: Groen Gedaan (RD duurzaamheidsprogramma automotive)
+// Bron: "Doel van de video" (script met 17 blokken: 2 animaties,
+// b-roll en 2 interviews). Draaidagen: do 11 & vr 12 sep, Frankrijk
+// (vr = Parijs). Interview blok 9 = automotive-ondernemer,
+// blok 14 = leasemaatschappij — zie Info-tab voor de volledige teksten.
+// ============================================================
+
+const GROEN_ACTS = [
+  // ---------- DO 11 SEP · AUTOMOTIVE-LOCATIE (aanname — wissel met vr als het andersom is) ----------
+  {
+    id: "gg-auto-interview", order: 1,
+    name: "Interview automotive-ondernemer",
+    priority: "high",
+    location: "Locatie 1 (automotive) — Frankrijk",
+    slots: [
+      { day: "do", time: "Interview: GAP-vragenlijst, hulp helpdesk, logische eisen, rapportages/kostenreductie, beter imago (scriptblok 9 — volledige tekst in Info-tab)" },
+      { day: "do", time: "Luisterschoten / tweede hoek voor het interview" }
+    ],
+    note: "Dit is de tekst voor het AUTOBEDRIJF (ondernemer): gaat over zelf de vragenlijst invullen, eisen, kosten en imago."
+  },
+  {
+    id: "gg-auto-broll", order: 2,
+    name: "B-roll automotive (scriptblokken 4–8, 10–11, 13, 15)",
+    priority: "high",
+    location: "Locatie 1 (automotive) — werkplaats & kantoor",
+    slots: [
+      { day: "do", time: "Blok 4 · Medewerker sorteert afval in de werkplaats (E van ESG)" },
+      { day: "do", time: "Blok 5 · Medewerker kijkt naar veiligheid in de werkplaats (S van ESG)" },
+      { day: "do", time: "Blok 6 · Medewerker achter bureau met vergunningen e.d. (G van ESG)" },
+      { day: "do", time: "Blok 7 · Ondernemer achter PC vult GAP-vragenlijst in GreenFlow in (evt. PIP met helpdesk)" },
+      { day: "do", time: "Blok 8 · Ondernemer aan tafel met auditeur" },
+      { day: "do", time: "Blok 10 · Certificaat ingelijst / bordje aan de gevel / folders op de balie" },
+      { day: "do", time: "Blok 11 · Personeel aan de koffietafel of in werkbespreking" },
+      { day: "do", time: "Blok 13 · Ondernemer aan de telefoon met leasemaatschappij (bij voorkeur PIP)" },
+      { day: "do", time: "Blok 15 · Ondernemer achter PC (rapportages/VSME)" }
+    ],
+    note: "Alle voice-over-beelden die op een autobedrijf spelen — in één draaidag te vangen."
+  },
+
+  // ---------- VR 12 SEP · PARIJS (leasemaatschappij — aanname) ----------
+  {
+    id: "gg-lease-interview", order: 3,
+    name: "Interview leasemaatschappij",
+    priority: "high",
+    location: "Locatie 2 — Parijs",
+    slots: [
+      { day: "vr", time: "Interview: duurzaamheid core business, wetgeving/rapportage, GreenFlow, RD als samenwerkingsplatform (scriptblok 14 — volledige tekst in Info-tab)" },
+      { day: "vr", time: "Luisterschoten / tweede hoek voor het interview" }
+    ],
+    note: "Dit is de tekst voor de LEASEMAATSCHAPPIJ: gaat over eisen stellen aan partners, data via GreenFlow en samenwerken in het platform. LET OP: de tekst eindigt afgebroken in het document ('Een extra plus is dat we de…') — laatste zin opvragen bij de klant."
+  },
+  {
+    id: "gg-lease-broll", order: 4,
+    name: "B-roll kantoor / lease (scriptblok 12 + sfeer)",
+    priority: "high",
+    location: "Locatie 2 — Parijs, kantoor",
+    slots: [
+      { day: "vr", time: "Blok 12 · Mensen in vergadering (expert committee-gevoel)" },
+      { day: "vr", time: "Kantoorsfeer: medewerkers aan het werk, overleg, pand/gevel" },
+      { day: "vr", time: "Detailshots: schermen met data/rapportages (GreenFlow-gevoel)" }
+    ]
+  },
+  {
+    id: "gg-open", order: 5,
+    name: "Nog te beleggen shots (niet per se in Frankrijk)",
+    priority: "conditional",
+    location: "N.t.b.",
+    slots: [
+      { day: "do", time: "Blok 3 · RD-helpdeskmedewerkster aan de telefoon — waar schieten we dit?" },
+      { day: "vr", time: "Blok 17 · Medewerker RD (slotshot) — waar schieten we dit?" },
+      { day: "do", time: "Blok 1–2 · Animaties (extern te maken, geen draaiwerk)" },
+      { day: "vr", time: "Blok 16 · Beeld of animatie n.t.b." }
+    ],
+    note: "Deze blokken horen niet vanzelfsprekend bij de twee Franse locaties — check bij de klant waar/hoe deze gemaakt worden (RD-kantoor is er ook in NL en BE)."
+  }
+];
+
+const GROEN_INFO = {
+  title: "Groen Gedaan — wie zegt wat",
+  groups: [
+    {
+      label: "Interviewtekst 1 — AUTOMOTIVE-ONDERNEMER (scriptblok 9)",
+      text: "'Om het proces op te starten vul je online een vragenlijst in. Je kan de helpdesk vragen je hierbij te helpen. Als je de vragen hebt beantwoord dan heb je ook meteen beeld welke eisen er gesteld worden. Het zijn vaak hele logische eisen, maar er zijn ook zaken waar wij niet aan gedacht hadden. Maar die wel belangrijk zijn. Ook krijgen wij rapportages die ons helpen kosten te reduceren. Want CO2-reductie is ook altijd kostenreductie. En, natuurlijk zien we ook dat ons bedrijf met het certificaat een beter imago heeft.'"
+    },
+    {
+      label: "Interviewtekst 2 — LEASEMAATSCHAPPIJ (scriptblok 14)",
+      text: "'Voor ons is duurzaamheid core business. Dat geldt voor onze eigen bedrijfsvoering, maar dat vragen wij ook van de bedrijven waarmee wij zaken doen. Dit doen we vanuit een intrinsieke motivatie, maar wetgeving verplicht ons steeds meer om hiervoor verantwoordelijkheid te dragen en te rapporteren. Van de bedrijven die bij RD zijn aangesloten, krijgen wij de duurzaamheidsprestaties gestructureerd binnen via het datasysteem GreenFlow. Maar RD is meer dan een keurmerk, het is een platform waar wij met collega-leasemaatschappijen, verzekeraars en de automotive-bedrijven samenwerken aan verduurzaming. Een extra plus is dat we de …' ⚠️ AFGEBROKEN IN HET DOCUMENT — laatste zin opvragen."
+    },
+    {
+      label: "Ezelsbrug",
+      text: "Autobedrijf praat als DEELNEMER (ik vul de vragenlijst in, ik krijg rapportages, mijn imago).\nLeasemaatschappij praat als EISENDE KLANT/PARTNER (wij vragen dit van bedrijven, wij krijgen data binnen, wij besturen het platform).\nAanname in deze lijst: do 11 sep = automotive-locatie, vr 12 sep = Parijs = leasemaatschappij. Andersom? De teksten verhuizen mee met het type bedrijf, niet met de dag."
+    },
+    {
+      label: "Doel & openstaande punten",
+      text: "Doel video: beeld geven van RD (duurzaamheidsprogramma, ESG/GreenFlow) en motiveren om aan te sluiten. Meer dan 5.000 aangesloten bedrijven; kantoren in NL, BE en FR.\nNog checken bij klant: adressen + tijden van beide locaties, wie de animaties (blok 1–2) maakt, waar de RD-helpdesk-/medewerker-shots (blok 3 en 17) geschoten worden, en de afgebroken slotzin van het lease-interview."
+    }
+  ]
+};
+
+// ============================================================
 // PROJECT-REGISTER
 // ============================================================
 
 const PROJECTS = [
+  {
+    id: "groen-gedaan",
+    name: "Groen Gedaan",
+    subtitle: "RD-video · 2 interviews in Frankrijk · do 11 & vr 12 sep (Parijs)",
+    icon: "🌱",
+    stateKey: "groengedaan_v1",
+    doneMode: "all",
+    days: [
+      { key: "do", label: "Do 11 sep", date: "2026-09-11" },
+      { key: "vr", label: "Vr 12 sep", date: "2026-09-12" }
+    ],
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },
+      { id: "cam2", name: "Cameraman 2", color: "#5b9bff", soft: "" }
+    ],
+    info: GROEN_INFO,
+    acts: GROEN_ACTS
+  },
   {
     id: "passerel",
     name: "De Passerel",
