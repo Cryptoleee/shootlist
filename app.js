@@ -31,6 +31,7 @@ function normalizeState(s) {
   if (!s.slots) s.slots = {};
   if (!s.notes) s.notes = {};
   if (!s.assign) s.assign = {};
+  if (!s.dates) s.dates = {}; // afwijkende datum per act (ISO yyyy-mm-dd)
   if (!s.crew) s.crew = [];
   if (!s.crewRemoved) s.crewRemoved = {};
   for (const k of Object.keys(s.slots)) {
@@ -63,6 +64,42 @@ function slotKey(actId, idx) { return `${actId}::${idx}`; }
 function isSlotDone(s, actId, idx) { return !!entryVal(s.slots, slotKey(actId, idx)); }
 function noteText(actId) { return entryVal(state.notes, actId) || ""; }
 function assignedId(s, actId) { return entryVal(s.assign, actId) || null; }
+function dateOverride(actId) { return entryVal(state.dates, actId) || null; }
+
+// "2026-09-30" → "wo 30 sep"
+function fmtDate(iso) {
+  try {
+    const d = new Date(iso + "T12:00:00");
+    return d.toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" });
+  } catch (e) { return iso; }
+}
+
+// geplande datum van een act: afwijkende datum wint van de route-dag
+function actDate(act) {
+  const ov = dateOverride(act.id);
+  if (ov) return ov;
+  const info = project.days.find(d => d.key === act.slots[0]?.day);
+  return info && info.date ? info.date : null;
+}
+
+// Google Agenda-template: hele dag, adres in locatieveld (doorklikbaar naar Maps)
+function calendarUrl(act) {
+  const iso = actDate(act);
+  if (!iso) return null;
+  const d0 = iso.replace(/-/g, "");
+  const next = new Date(iso + "T12:00:00");
+  next.setDate(next.getDate() + 1);
+  const d1 = next.toISOString().slice(0, 10).replace(/-/g, "");
+  const prefix = (project.calendar && project.calendar.prefix) || project.name;
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${prefix} — ${act.name}`,
+    dates: `${d0}/${d1}`,
+    location: act.addr || act.location,
+    details: (act.note || "") + (noteText(act.id) ? `\nNotitie: ${noteText(act.id)}` : "")
+  });
+  return "https://calendar.google.com/calendar/render?" + params.toString();
+}
 
 function isActDoneIn(p, s, act) {
   // "any": act = done zodra >=1 slot is afgevinkt (snippet voldoende)
@@ -195,6 +232,15 @@ function toggleSlot(actId, idx) {
   if (nowOn) lastPop = `slot:${k}`;
   saveState();
   render();
+  // klus met agenda-koppeling: bij afvinken van 'Bevestigd' direct
+  // aanbieden om de afspraak in Google Agenda te zetten
+  if (nowOn && project.calendar) {
+    const act = project.acts.find(a => a.id === actId);
+    if (act && act.slots[idx] && act.slots[idx].time === "Bevestigd") {
+      const url = calendarUrl(act);
+      if (url) showToast(`${act.name} bevestigd`, "Zet in agenda", () => window.open(url, "_blank"), 15000);
+    }
+  }
 }
 
 function toggleAct(act) {
@@ -668,6 +714,7 @@ function renderActCard(act) {
           ${multiDay ? `<span class="meta-days">${days.map(d => dayLabel(d)).join(" · ")}</span>` : ""}
           <span class="meta-loc">${escapeHtml(act.location)}</span>
         </div>
+        ${dateOverride(act.id) ? `<div class="date-badge">Afwijkende datum · ${fmtDate(dateOverride(act.id))}</div>` : ""}
         ${stepBar}
       </div>
       ${out ? `<button class="collapse-btn" data-collapse title="Inklappen">▴</button>` : ""}
@@ -773,6 +820,41 @@ function openModal(act) {
     });
     slotsEl.appendChild(row);
   });
+  // afspraak: afwijkende datum + agenda-knop (klussen met agenda-koppeling)
+  const planEl = document.getElementById("modalPlan");
+  if (project.calendar) {
+    const ov = dateOverride(act.id) || "";
+    const routeDay = project.days.find(d => d.key === act.slots[0]?.day);
+    const bevestigdIdx = act.slots.findIndex(s => s.time === "Bevestigd");
+    const isBevestigd = bevestigdIdx >= 0 && isSlotDone(state, act.id, bevestigdIdx);
+    planEl.style.display = "";
+    planEl.innerHTML = `
+      <label class="notes-label">Afspraak</label>
+      <div class="plan-row">
+        <span class="plan-hint">Route-dag: ${routeDay ? escapeHtml(routeDay.label) : "-"}</span>
+        <input type="date" id="planDate" value="${escapeHtml(ov)}" />
+        ${ov ? `<button class="chip plan-clear" id="planClear">Wis</button>` : ""}
+      </div>
+      ${isBevestigd ? `<a class="cal-btn" href="${escapeHtml(calendarUrl(act) || "#")}" target="_blank" rel="noopener">In Google Agenda zetten ↗</a>` : `<div class="plan-hint" style="margin-top:8px">Vink 'Bevestigd' af voor de agenda-knop.</div>`}
+    `;
+    document.getElementById("planDate").addEventListener("change", (e) => {
+      setEntry(state.dates, act.id, e.target.value || null);
+      saveState();
+      render();
+      openModal(act);
+    });
+    const clearBtn = document.getElementById("planClear");
+    if (clearBtn) clearBtn.addEventListener("click", () => {
+      setEntry(state.dates, act.id, null);
+      saveState();
+      render();
+      openModal(act);
+    });
+  } else {
+    planEl.style.display = "none";
+    planEl.innerHTML = "";
+  }
+
   // toewijzen aan crewlid
   const assignEl = document.getElementById("modalAssign");
   {
@@ -950,6 +1032,7 @@ function pickSyncFields(s) {
     slots: s.slots || {},
     notes: s.notes || {},
     assign: s.assign || {},
+    dates: s.dates || {},
     crew: s.crew || [],
     crewRemoved: s.crewRemoved || {}
   };
@@ -978,6 +1061,7 @@ function mergeStates(local, remote) {
     slots: mergeEntryMaps(local.slots, remote.slots),
     notes: mergeEntryMaps(local.notes, remote.notes),
     assign: mergeEntryMaps(local.assign, remote.assign),
+    dates: mergeEntryMaps(local.dates, remote.dates),
     crewRemoved: tombs,
     crew: Object.values(crewMap)
       .filter(m => !(tombs[m.id] && String(tombs[m.id]) > String(m.t || "")))
