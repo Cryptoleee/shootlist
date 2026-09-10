@@ -885,15 +885,22 @@ const UNIVE_INFO = {
 // ============================================================
 
 function abaAct(order, id, name, cat, cluster, addr, email, tel, note) {
+  // route → geplande draaidag: A = di 23, B = wo 24, C = do 25 sep;
+  // studenten (S) mee met route A, uitschieter D aan het eind van de week
+  const day = cluster.startsWith("A") ? "d23"
+    : cluster.startsWith("B") ? "d24"
+    : cluster.startsWith("S") ? "d23"
+    : "d25";
   return {
     id, order,
     name,
     priority: "normal",
     location: `${cluster} — ${addr}`,
+    addr,
     slots: [
-      { day: "dag", time: "Gemaild" },
-      { day: "dag", time: "Bevestigd" },
-      { day: "dag", time: "Gefilmd" }
+      { day, time: "Gemaild" },
+      { day, time: "Bevestigd" },
+      { day, time: "Gefilmd" }
     ],
     note: `${cat} · ${email} · ${tel}${note ? " · " + note : ""}`
   };
@@ -944,8 +951,8 @@ const ABA_INFO = {
       ]
     },
     {
-      label: "Dagindeling (voorstel)",
-      text: "Dag 1 — Route A · Centrum: 7 bedrijven op loopafstand, à 45 min ben je de dag zoet.\nDag 2 — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nDag 3 — Route C · Noord & Oost: De Kabath → STOOM → Peroli → Talen → Retro Empire.\nDe Fonteyn (Uddel, 20 min): apart moment of als vroege start vóór een route.\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
+      label: "Dagindeling (gemaild naar genomineerden)",
+      text: "Di 23 sep — Route A · Centrum (+ studenten GetNailed & NXT LVL): 7 bedrijven op loopafstand.\nWo 24 sep — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nDo 25 sep — Route C · Noord & Oost: De Kabath → STOOM → Peroli → Talen → Retro Empire. De Fonteyn (Uddel) los inplannen.\n\nWijkt een bedrijf af van zijn route-dag? Zet de afwijkende datum in de detail-kaart (veld 'Afwijkende datum') — die verschijnt dan duidelijk op de kaart.\nBij afvinken van 'Bevestigd' verschijnt een knop om de afspraak direct in Google Agenda te zetten, met het adres erbij (doorklikbaar naar Maps).\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
     },
     {
       label: "Aandachtspunten",
@@ -1276,12 +1283,15 @@ const PROJECTS = [
   {
     id: "aba-2026",
     name: "Apeldoorn Business Awards 2026",
-    subtitle: "18 genomineerden + 3 studenten · routes vanaf Oranjelaan 2 · gemaild → bevestigd → gefilmd",
+    subtitle: "18 genomineerden + 3 studenten · di 23 – do 25 sep · gemaild → bevestigd → gefilmd",
     icon: "🏆",
     stateKey: "aba2026_v1",
     doneMode: "all", // bedrijf pas klaar als gemaild + bevestigd + gefilmd
+    calendar: { prefix: "ABA filmen" }, // agenda-knop bij status 'Bevestigd'
     days: [
-      { key: "dag", label: "Planning" }
+      { key: "d23", label: "Di 23 sep", date: "2026-09-23" },
+      { key: "d24", label: "Wo 24 sep", date: "2026-09-24" },
+      { key: "d25", label: "Do 25 sep", date: "2026-09-25" }
     ],
     crew: [
       { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },

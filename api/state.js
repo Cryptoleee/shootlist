@@ -24,6 +24,7 @@ function mergeStates(local, remote) {
     slots: mergeEntryMaps(local.slots, remote.slots),
     notes: mergeEntryMaps(local.notes, remote.notes),
     assign: mergeEntryMaps(local.assign, remote.assign),
+    dates: mergeEntryMaps(local.dates, remote.dates),
     crewRemoved: {},
     crew: []
   };
@@ -68,6 +69,7 @@ function pickSyncFields(s) {
     slots: s.slots || {},
     notes: s.notes || {},
     assign: s.assign || {},
+    dates: s.dates || {},
     crew: Array.isArray(s.crew) ? s.crew : [],
     crewRemoved: s.crewRemoved || {}
   };
