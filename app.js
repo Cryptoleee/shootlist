@@ -311,6 +311,7 @@ function openProject(id) {
   document.getElementById("appTitle").textContent = p.name;
 
   buildDayChips();
+  buildStatusChips();
   buildWhoChips();
   buildTabs();
   restoreFilterUI();
@@ -435,16 +436,56 @@ function buildWhoChips() {
   mk("none", "Niet toegewezen");
 }
 
-function setupStaticFilters() {
-  document.querySelectorAll(".filters .chip[data-status]").forEach(btn => {
+// hoogste afgevinkte status-stap van een act (-1 = nog niets)
+function stageOf(act) {
+  let st = -1;
+  act.slots.forEach((_, i) => { if (isSlotDone(state, act.id, i)) st = i; });
+  return st;
+}
+
+// statusfilter-rij: standaard Alles/Nog doen/Gedaan, maar bij een klus met
+// statusFlow (bv. ABA) worden het de stappen zelf: Gemaild/Bevestigd/Gefilmd
+const STAGE_CHIP_COLORS = [
+  { c: "#ff3d5a", t: "#ffffff" },
+  { c: "#ff9f2e", t: "#101010" },
+  { c: "#2ee07c", t: "#101010" }
+];
+function buildStatusChips() {
+  const row = document.getElementById("statusRow");
+  row.innerHTML = "";
+  const label = document.createElement("span");
+  label.className = "sort-label";
+  label.textContent = "Status";
+  row.appendChild(label);
+  const mk = (val, text, color) => {
+    const btn = document.createElement("button");
+    btn.className = "chip secondary";
+    btn.dataset.status = val;
+    btn.textContent = text;
+    if (color) {
+      btn.style.setProperty("--sc", color.c);
+      btn.style.setProperty("--sc-text", color.t);
+    }
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".filters .chip[data-status]").forEach(b => b.classList.remove("active"));
+      row.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      state.filters.status = btn.dataset.status;
+      state.filters.status = val;
       saveState();
       render();
     });
-  });
+    row.appendChild(btn);
+  };
+  mk("all", "Alles");
+  if (project.statusFlow) {
+    mk("stage:none", "Nog niets");
+    project.statusFlow.forEach((s, i) => mk("stage:" + i, s, STAGE_CHIP_COLORS[Math.min(i, STAGE_CHIP_COLORS.length - 1)]));
+  } else {
+    mk("todo", "Nog doen");
+    mk("done", "Gedaan");
+  }
+}
+
+function setupStaticFilters() {
   document.querySelectorAll(".filters .chip[data-priority]").forEach(btn => {
     btn.addEventListener("click", () => {
       btn.classList.toggle("active");
@@ -484,7 +525,14 @@ function restoreFilterUI() {
   document.querySelectorAll("#whoRow .chip").forEach(b => {
     b.classList.toggle("active", b.dataset.who === state.filters.who);
   });
-  document.querySelectorAll(".filters .chip[data-status]").forEach(b => {
+  // reset status-filter als hij niet bestaat in deze klus
+  const validStatus = ["all"].concat(
+    project.statusFlow
+      ? ["stage:none", ...project.statusFlow.map((_, i) => "stage:" + i)]
+      : ["todo", "done"]
+  );
+  if (!validStatus.includes(state.filters.status)) state.filters.status = "all";
+  document.querySelectorAll("#statusRow .chip").forEach(b => {
     b.classList.toggle("active", b.dataset.status === state.filters.status);
   });
   document.querySelectorAll(".filters .chip[data-priority]").forEach(b => {
@@ -534,6 +582,11 @@ function filterActs() {
     }
     if (state.filters.status === "todo" && isActDone(act)) return false;
     if (state.filters.status === "done" && !isActDone(act)) return false;
+    if (state.filters.status.startsWith("stage:")) {
+      const want = state.filters.status.slice(6);
+      const st = stageOf(act);
+      if (want === "none" ? st !== -1 : st !== parseInt(want, 10)) return false;
+    }
     if (crewList().length > 0 && state.filters.who !== "all") {
       const assigned = assignedId(state, act.id);
       if (state.filters.who === "none") { if (assigned) return false; }
