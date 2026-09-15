@@ -952,7 +952,7 @@ const ABA_INFO = {
     },
     {
       label: "Dagindeling (gemaild naar genomineerden)",
-      text: "Di 23 sep — Route A · Centrum (+ studenten GetNailed & NXT LVL): 7 bedrijven op loopafstand.\nWo 24 sep — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nDo 25 sep — Route C · Noord & Oost: De Kabath → STOOM → Peroli → Talen → Retro Empire. De Fonteyn (Uddel) los inplannen.\n\nWijkt een bedrijf af van zijn route-dag? Zet de afwijkende datum in de detail-kaart (veld 'Afwijkende datum') — die verschijnt dan duidelijk op de kaart.\nBij afvinken van 'Bevestigd' verschijnt een knop om de afspraak direct in Google Agenda te zetten, met het adres erbij (doorklikbaar naar Maps).\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
+      text: "Wo 23 sep — Route A · Centrum (+ studenten GetNailed & NXT LVL): 7 bedrijven op loopafstand.\nDo 24 sep — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nVr 25 sep — Route C · Noord & Oost: De Kabath → STOOM (verzet naar ma 28 sep) → Peroli → Talen → Retro Empire. De Fonteyn (Uddel) los inplannen.\n\nWijkt een bedrijf af van zijn route-dag? Zet de afwijkende datum in de detail-kaart (veld 'Afwijkende datum') — die verschijnt dan duidelijk op de kaart.\nBij afvinken van 'Bevestigd' verschijnt een knop om de afspraak direct in Google Agenda te zetten, met het adres erbij (doorklikbaar naar Maps).\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
     },
     {
       label: "Aandachtspunten",
@@ -1246,13 +1246,13 @@ const PROJECTS = [
   {
     id: "groen-gedaan",
     name: "Groen Gedaan",
-    subtitle: "RD-video · 2 interviews in Frankrijk · do 11 & vr 12 sep (Parijs)",
+    subtitle: "RD-video · 2 interviews in Frankrijk · do 10 & vr 11 sep (Parijs)",
     icon: "🌱",
     stateKey: "groengedaan_v1",
     doneMode: "all",
     days: [
-      { key: "do", label: "Do 11 sep", date: "2026-09-11" },
-      { key: "vr", label: "Vr 12 sep", date: "2026-09-12" }
+      { key: "do", label: "Do 10 sep", date: "2026-09-10" },
+      { key: "vr", label: "Vr 11 sep", date: "2026-09-11" }
     ],
     crew: [
       { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },
@@ -1269,8 +1269,8 @@ const PROJECTS = [
     stateKey: "passerel_v1",
     doneMode: "all", // alle shots per blok nodig
     days: [
-      { key: "d8", label: "Ma 8 sep", date: "2026-09-08" },
-      { key: "d9", label: "Di 9 sep", date: "2026-09-09" },
+      { key: "d8", label: "Di 8 sep", date: "2026-09-08" },
+      { key: "d9", label: "Wo 9 sep", date: "2026-09-09" },
       { key: "d15", label: "Di 15 sep", date: "2026-09-15" }
     ],
     crew: [
@@ -1288,10 +1288,11 @@ const PROJECTS = [
     stateKey: "aba2026_v1",
     doneMode: "all", // bedrijf pas klaar als gemaild + bevestigd + gefilmd
     calendar: { prefix: "ABA filmen" }, // agenda-knop bij status 'Bevestigd'
+    statusFlow: ["Gemaild", "Bevestigd", "Gefilmd"],
     days: [
-      { key: "d23", label: "Di 23 sep", date: "2026-09-23" },
-      { key: "d24", label: "Wo 24 sep", date: "2026-09-24" },
-      { key: "d25", label: "Do 25 sep", date: "2026-09-25" }
+      { key: "d23", label: "Wo 23 sep", date: "2026-09-23" },
+      { key: "d24", label: "Do 24 sep", date: "2026-09-24" },
+      { key: "d25", label: "Vr 25 sep", date: "2026-09-25" }
     ],
     crew: [
       { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },

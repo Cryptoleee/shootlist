@@ -366,9 +366,9 @@ body.home-mode .back-btn { display: none; }
   font-weight: 700;
 }
 .chip.secondary.active {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
+  background: var(--sc, var(--ink));
+  color: var(--sc-text, var(--bg));
+  border-color: var(--sc, var(--ink));
 }
 .chip.tag {
   font-size: 11.5px;
