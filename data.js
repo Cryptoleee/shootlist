@@ -885,7 +885,7 @@ const UNIVE_INFO = {
 // ============================================================
 
 function abaAct(order, id, name, cat, cluster, addr, email, tel, note) {
-  // route → geplande draaidag: A = di 23, B = wo 24, C = do 25 sep;
+  // route → geplande draaidag: A = wo 23, B = do 24, C = vr 25 sep;
   // studenten (S) mee met route A, uitschieter D aan het eind van de week
   const day = cluster.startsWith("A") ? "d23"
     : cluster.startsWith("B") ? "d24"
@@ -906,7 +906,40 @@ function abaAct(order, id, name, cat, cluster, addr, email, tel, note) {
   };
 }
 
+// Bestuur en jury zijn geen genomineerden maar wel aparte opnames.
+// Zelfde 3 statussen zodat de filters en de statusbalk blijven werken.
+const ABA_EXTRA_ACTS = [
+  {
+    id: "aba-bestuur", order: 0,
+    name: "Bestuur ABA",
+    priority: "high",
+    location: "De Ambacht (oude ambachtsschool) — Molenstraat Centrum 1, Apeldoorn",
+    addr: "Molenstraat Centrum 1, Apeldoorn",
+    slots: [
+      { day: "d23", time: "Gemaild" },
+      { day: "d23", time: "Bevestigd" },
+      { day: "d23", time: "Gefilmd" }
+    ],
+    note: "Organisatie · Wo 23 sep 09:00 · Al gepland. LET OP: De Kap staat om 09:30, dus hier maar een half uur — bestuur en De Kap liggen 1 km van elkaar. Zelfde pand waar De Kabath op vr 25 sep wil filmen."
+  },
+  {
+    id: "aba-jury", order: 22,
+    name: "Juryleden ABA",
+    priority: "high",
+    location: "Circulus — Aruba 16, Apeldoorn",
+    addr: "Aruba 16, Apeldoorn",
+    slots: [
+      { day: "d29", time: "Gemaild" },
+      { day: "d29", time: "Bevestigd" },
+      { day: "d29", time: "Gefilmd" }
+    ],
+    note: "Organisatie · Di 29 sep 09:00 · Juryoverleg, al gepland. Afstemmen met Priscilla Trip: 06 25 05 14 22 (verzoek van Tim Koldenhof). Circulus ligt op hetzelfde bedrijventerrein als SPL en De Cabinespecialist (Curacao)."
+  }
+];
+
 const ABA_ACTS = [
+  ...ABA_EXTRA_ACTS,
+
   // Cluster A — Centrum (alles op loopafstand van Oranjelaan 2, ±2 km totaal)
   abaAct(1, "aba-de-kap", "De Kap", "Maatschappelijke Organisaties", "A · Centrum", "Regentesselaan 2B, Apeldoorn", "info@dekap.nl", "055 529 55 20", "Contact: Lineke Maat · 300 m van je startpunt"),
   abaAct(2, "aba-zenzez", "ZenZeZ Hotel & Lounge", "Horeca en Toerisme", "A · Centrum", "Canadalaan 26, Apeldoorn", "info@zenzezhotel.nl", "055 522 24 33", "Contact: Petra Bangma"),
@@ -952,11 +985,11 @@ const ABA_INFO = {
     },
     {
       label: "Dagindeling (gemaild naar genomineerden)",
-      text: "Wo 23 sep — Route A · Centrum (+ studenten GetNailed & NXT LVL): 7 bedrijven op loopafstand.\nDo 24 sep — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nVr 25 sep — Route C · Noord & Oost: De Kabath → STOOM (verzet naar ma 28 sep) → Peroli → Talen → Retro Empire. De Fonteyn (Uddel) los inplannen.\n\nWijkt een bedrijf af van zijn route-dag? Zet de afwijkende datum in de detail-kaart (veld 'Afwijkende datum') — die verschijnt dan duidelijk op de kaart.\nBij afvinken van 'Bevestigd' verschijnt een knop om de afspraak direct in Google Agenda te zetten, met het adres erbij (doorklikbaar naar Maps).\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
+      text: "Wo 23 sep — 09:00 bestuur @ De Ambacht, daarna Route A · Centrum (+ studenten GetNailed & NXT LVL): 7 bedrijven op loopafstand.\nDo 24 sep — Route B · Zuid: RTV → VRM → SPL + Cabinespecialist (tegenover elkaar!) → Parc Spelderholt.\nVr 25 sep — Route C · Noord & Oost: De Kabath → STOOM (verzet naar ma 28 sep) → Peroli (afgezegd, verzetten) → Talen → Retro Empire. De Fonteyn (Uddel) los inplannen.\nDi 29 sep — 09:00 juryoverleg @ Circulus, Aruba 16.\n\nWijkt een bedrijf af van zijn route-dag? Zet de afwijkende datum in de detail-kaart (veld 'Afwijkende datum') — die verschijnt dan duidelijk op de kaart.\nBij afvinken van 'Bevestigd' verschijnt een knop om de afspraak direct in Google Agenda te zetten, met het adres erbij (doorklikbaar naar Maps).\n\nWerkwijze per bedrijf: max 45 min sfeerbeelden, afsluiten met juichshot van het team, video krijgt voice-over."
     },
     {
       label: "Aandachtspunten",
-      text: "Contactpersonen en e-mailadressen komen uit de adressenlijst van de klant (27 aug 2026) — die is leidend.\nSandmann Optiek is verhuisd: NIET Hoofdstraat maar Mariastraat 4. Maandag gesloten.\nTeun is een feestlocatie, alleen op afspraak open — zonder bevestiging niet langsgaan.\nHouse of Tall zit sinds feb 2026 op Brinklaan 9-11.\nSPL en De Cabinespecialist liggen tegenover elkaar — plan aansluitend.\nStudenten: GetNailed JMC en NXT LVL (leslocatie GIGANT) zitten allebei in het centrum — kunnen mee met Route A. Muteba Fitt: eerst adres opvragen.\nConcept-mail 2026 staat klaar in Gmail Drafts (BCC volgens klantlijst)."
+      text: "Contactpersonen en e-mailadressen komen uit de adressenlijst van de klant (27 aug 2026) — die is leidend.\nBestuur (wo 23 sep 09:00) en juryleden (di 29 sep 09:00) staan als losse kaarten bovenaan en onderaan de lijst. Adressen zelf opgezocht — even dubbelchecken: De Ambacht = Molenstraat Centrum 1, Circulus = Aruba 16.\nSandmann Optiek is verhuisd: NIET Hoofdstraat maar Mariastraat 4. Maandag gesloten.\nTeun is een feestlocatie, alleen op afspraak open — zonder bevestiging niet langsgaan.\nHouse of Tall zit sinds feb 2026 op Brinklaan 9-11.\nSPL en De Cabinespecialist liggen tegenover elkaar — plan aansluitend.\nStudenten: GetNailed JMC en NXT LVL (leslocatie GIGANT) zitten allebei in het centrum — kunnen mee met Route A. Muteba Fitt: eerst adres opvragen.\nConcept-mail 2026 staat klaar in Gmail Drafts (BCC volgens klantlijst)."
     }
   ]
 };
@@ -1283,7 +1316,7 @@ const PROJECTS = [
   {
     id: "aba-2026",
     name: "Apeldoorn Business Awards 2026",
-    subtitle: "18 genomineerden + 3 studenten · di 23 – do 25 sep · gemaild → bevestigd → gefilmd",
+    subtitle: "18 genomineerden + 3 studenten + bestuur & jury · wo 23 – vr 25 sep · gemaild → bevestigd → gefilmd",
     icon: "🏆",
     stateKey: "aba2026_v1",
     doneMode: "all", // bedrijf pas klaar als gemaild + bevestigd + gefilmd
@@ -1292,7 +1325,8 @@ const PROJECTS = [
     days: [
       { key: "d23", label: "Wo 23 sep", date: "2026-09-23" },
       { key: "d24", label: "Do 24 sep", date: "2026-09-24" },
-      { key: "d25", label: "Vr 25 sep", date: "2026-09-25" }
+      { key: "d25", label: "Vr 25 sep", date: "2026-09-25" },
+      { key: "d29", label: "Di 29 sep", date: "2026-09-29" }
     ],
     crew: [
       { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },
