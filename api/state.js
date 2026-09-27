@@ -25,6 +25,7 @@ function mergeStates(local, remote) {
     notes: mergeEntryMaps(local.notes, remote.notes),
     assign: mergeEntryMaps(local.assign, remote.assign),
     dates: mergeEntryMaps(local.dates, remote.dates),
+    archived: mergeEntryMaps(local.archived, remote.archived),
     crewRemoved: {},
     crew: []
   };
@@ -70,6 +71,7 @@ function pickSyncFields(s) {
     notes: s.notes || {},
     assign: s.assign || {},
     dates: s.dates || {},
+    archived: s.archived || {}, // alleen gevuld onder project-id "home"
     crew: Array.isArray(s.crew) ? s.crew : [],
     crewRemoved: s.crewRemoved || {}
   };
