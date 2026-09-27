@@ -7,6 +7,15 @@ let state = null;   // state van actieve klus
 
 function storageKeyFor(p) { return `shootlist_state_${p.stateKey}`; }
 
+// Het startscherm heeft een eigen gedeelde staat: welke klussen zijn
+// afgevinkt (gefilmd, nu in de edit) en dus naar het archief verhuisd.
+// Die staat synct onder project-id "home", zodat beide telefoons
+// hetzelfde archief zien.
+const HOME_KEY = "shootlist_home_v1";
+const HOME_SYNC_ID = "home";
+let homeState = null;
+let homeTab = "active";
+
 function nowIso() { return new Date().toISOString(); }
 
 // Elke sync-bare waarde is een entry { v, t }: waarde + timestamp.
@@ -58,6 +67,27 @@ function saveState() {
   if (!project || !state) return;
   localStorage.setItem(storageKeyFor(project), JSON.stringify(state));
   schedulePush();
+}
+
+function loadHomeState() {
+  try {
+    const raw = localStorage.getItem(HOME_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (!s.archived) s.archived = {};
+      return s;
+    }
+  } catch (e) {}
+  return { archived: {} };
+}
+function saveHomeState() {
+  localStorage.setItem(HOME_KEY, JSON.stringify(homeState));
+  scheduleHomePush();
+}
+function isArchived(p) { return !!entryVal(homeState.archived, p.id); }
+function setArchived(p, v) {
+  setEntry(homeState.archived, p.id, v ? 1 : 0);
+  saveHomeState();
 }
 
 function slotKey(actId, idx) { return `${actId}::${idx}`; }
@@ -270,19 +300,51 @@ function showHome() {
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById("view-home").classList.add("active");
   renderHome();
+  startHomeSync();
   window.scrollTo(0, 0);
+}
+
+function setHomeTab(tab) {
+  homeTab = tab;
+  document.querySelectorAll(".home-tabs .tab").forEach(b => {
+    b.classList.toggle("active", b.dataset.homeTab === tab);
+  });
+  renderHome();
 }
 
 function renderHome() {
   const container = document.getElementById("projectsList");
+  const active = PROJECTS.filter(p => !isArchived(p));
+  const archived = PROJECTS.filter(p => isArchived(p));
+  for (const [el, n] of [["activeCount", active.length], ["archiveCount", archived.length]]) {
+    const node = document.getElementById(el);
+    node.textContent = n;
+    node.classList.toggle("hidden", n === 0);
+  }
+  document.getElementById("intro-label").textContent =
+    homeTab === "archive" ? "Gefilmd — in de edit" : "Kies een klus";
+
+  const list = homeTab === "archive" ? archived : active;
   container.innerHTML = "";
-  for (const p of PROJECTS) {
+
+  if (list.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "home-empty";
+    empty.textContent = homeTab === "archive"
+      ? "Nog niks afgevinkt. Vink een klus af zodra alles gefilmd is — dan verhuist hij hierheen."
+      : "Alle klussen staan in het archief.";
+    container.appendChild(empty);
+    return;
+  }
+
+  for (const p of list) {
     const s = loadState(p);
     const total = p.acts.length;
     const done = p.acts.filter(a => isActDoneIn(p, s, a)).length;
     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    const arch = isArchived(p);
     const card = document.createElement("div");
-    card.className = "project-card";
+    card.className = "project-card" + (arch ? " archived" : "");
     card.style.setProperty("--i", Math.min(container.children.length, 8));
     card.innerHTML = `
       <div class="project-icon">${p.icon || "🎬"}</div>
@@ -291,19 +353,39 @@ function renderHome() {
         <div class="project-sub">${escapeHtml(p.subtitle || "")}</div>
         <div class="project-progress">
           <div class="project-progress-bar"><div style="width:${pct}%"></div></div>
-          <span>${done} / ${total}</span>
+          <span>${arch ? "in de edit" : done + " / " + total}</span>
         </div>
       </div>
+      <button class="archive-btn${arch ? " on" : ""}" type="button"
+        title="${arch ? "Terugzetten naar actief" : "Afvinken — gefilmd, gaat naar archief"}"
+        aria-label="${arch ? "Terugzetten naar actief" : "Afvinken als gefilmd"}"></button>
       <div class="project-arrow">›</div>
     `;
     card.addEventListener("click", () => openProject(p.id));
+    card.querySelector(".archive-btn").addEventListener("click", e => {
+      e.stopPropagation();
+      toggleArchive(p);
+    });
     container.appendChild(card);
   }
+}
+
+function toggleArchive(p) {
+  const wasArchived = isArchived(p);
+  setArchived(p, !wasArchived);
+  renderHome();
+  showToast(
+    wasArchived ? `${p.name} staat weer op actief` : `${p.name} → archief`,
+    "Ongedaan",
+    () => { setArchived(p, wasArchived); renderHome(); },
+    5000
+  );
 }
 
 function openProject(id) {
   const p = PROJECTS.find(x => x.id === id);
   if (!p) return showHome();
+  stopHomeSync();
   project = p;
   state = loadState(p);
   expandedCards = new Set();
@@ -984,8 +1066,8 @@ document.getElementById("modalSave").addEventListener("click", () => {
   closeModal();
 });
 
-// ---- Tabs ----
-document.querySelectorAll(".tab").forEach(t => {
+// ---- Tabs (alleen de klus-tabs; het startscherm heeft eigen tabs) ----
+document.querySelectorAll(".tabs.project-only .tab").forEach(t => {
   t.addEventListener("click", () => activateTab(t.dataset.tab));
 });
 
@@ -1086,6 +1168,7 @@ function pickSyncFields(s) {
     notes: s.notes || {},
     assign: s.assign || {},
     dates: s.dates || {},
+    archived: s.archived || {}, // alleen gevuld in de "home"-staat
     crew: s.crew || [],
     crewRemoved: s.crewRemoved || {}
   };
@@ -1115,6 +1198,7 @@ function mergeStates(local, remote) {
     notes: mergeEntryMaps(local.notes, remote.notes),
     assign: mergeEntryMaps(local.assign, remote.assign),
     dates: mergeEntryMaps(local.dates, remote.dates),
+    archived: mergeEntryMaps(local.archived, remote.archived),
     crewRemoved: tombs,
     crew: Object.values(crewMap)
       .filter(m => !(tombs[m.id] && String(tombs[m.id]) > String(m.t || "")))
@@ -1208,11 +1292,62 @@ function stopSync() {
   clearTimeout(pushTimer);
   renderSyncBadge();
 }
+// ---- Sync van het startscherm (archief) ----
+// Zelfde merge-regels, maar onder project-id "home" en zonder badge:
+// het startscherm heeft geen eigen statusbalk.
+let homePullTimer = null;
+let homePushTimer = null;
+
+function adoptMergedHome(remote) {
+  const local = pickSyncFields(homeState);
+  const combined = mergeStates(local, remote);
+  if (stableStringify(combined) !== stableStringify(local)) {
+    homeState.archived = combined.archived;
+    localStorage.setItem(HOME_KEY, JSON.stringify(homeState));
+    if (!project) renderHome();
+  }
+}
+function scheduleHomePush() {
+  clearTimeout(homePushTimer);
+  homePushTimer = setTimeout(pushHomeState, 800);
+}
+async function pushHomeState() {
+  try {
+    const r = await fetch(`/api/state?project=${HOME_SYNC_ID}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state: pickSyncFields(homeState) })
+    });
+    const j = await r.json();
+    if (j.sync) adoptMergedHome(j.state);
+  } catch (e) { /* offline — stil laten */ }
+}
+async function pullHomeState() {
+  try {
+    const r = await fetch(`/api/state?project=${HOME_SYNC_ID}`);
+    const j = await r.json();
+    if (j.sync) adoptMergedHome(j.state);
+  } catch (e) { /* offline — stil laten */ }
+}
+function startHomeSync() {
+  stopHomeSync();
+  pullHomeState();
+  homePullTimer = setInterval(pullHomeState, 10_000);
+}
+function stopHomeSync() {
+  clearInterval(homePullTimer);
+}
+
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && project) pullState();
+  if (document.hidden) return;
+  if (project) pullState(); else pullHomeState();
 });
 
 // ---- Init ----
+homeState = loadHomeState();
+document.querySelectorAll(".home-tabs .tab").forEach(b => {
+  b.addEventListener("click", () => setHomeTab(b.dataset.homeTab));
+});
 setupStaticFilters();
 showHome();
 

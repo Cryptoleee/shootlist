@@ -38,7 +38,11 @@
 <main>
   <!-- HOME: klus-keuze -->
   <section id="view-home" class="view active">
-    <div class="home-intro">Kies een klus</div>
+    <div class="home-intro" id="intro-label">Kies een klus</div>
+    <nav class="tabs home-tabs">
+      <button class="tab active" data-home-tab="active">Actief<span id="activeCount" class="tab-count"></span></button>
+      <button class="tab" data-home-tab="archive">Archief<span id="archiveCount" class="tab-count"></span></button>
+    </nav>
     <div id="projectsList" class="projects-list"></div>
   </section>
 
