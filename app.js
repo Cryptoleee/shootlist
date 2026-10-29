@@ -775,6 +775,9 @@ function renderActCard(act) {
   const past = !done && isActPast(act);
   const out = done || past;
   const multiDay = project.days.length > 1;
+  // de dag per shot herhalen heeft alleen zin als de shots van deze act
+  // écht over meerdere dagen lopen — anders is het ruis op de regel
+  const multiDaySlots = new Set(act.slots.map(s => s.day)).size > 1;
   const crew = crewOf(act);
 
   // afgerond/voorbij en niet handmatig uitgeklapt → compacte regel
@@ -873,7 +876,7 @@ function renderActCard(act) {
     sEl.innerHTML = `
       <div class="slot-check ${sDone ? "checked" : ""}${lastPop === `slot:${slotKey(act.id, idx)}` ? " pop" : ""}" data-slot="${act.id}|${idx}">✓</div>
       <span class="slot-time">${escapeHtml(slot.time)}</span>
-      ${multiDay ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
+      ${multiDaySlots ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
     `;
     slotsEl.appendChild(sEl);
   });
@@ -920,6 +923,7 @@ let currentActId = null;
 function openModal(act) {
   currentActId = act.id;
   const multiDay = project.days.length > 1;
+  const multiDaySlots = new Set(act.slots.map(s => s.day)).size > 1;
   document.getElementById("modalTitle").textContent = act.name;
   const photoEl = document.getElementById("modalPhoto");
   if (act.photo) {
@@ -947,7 +951,7 @@ function openModal(act) {
     row.innerHTML = `
       <div class="slot-check ${sDone ? "checked" : ""}" data-mslot="${idx}">✓</div>
       <span class="slot-time">${escapeHtml(slot.time)}</span>
-      ${multiDay ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
+      ${multiDaySlots ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
     `;
     row.querySelector('[data-mslot]').addEventListener('click', () => {
       toggleSlot(act.id, idx);

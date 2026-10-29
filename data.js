@@ -1272,10 +1272,185 @@ const GROEN_INFO = {
 };
 
 // ============================================================
+// KLUS 7: Welkoop — Socials flight 3
+// Bron: Shotlist_socials_flight_3.pdf (5 concepten) +
+// Callsheet_20261027_Socials_flight_3.pdf (vr 30 okt 2026).
+// Eén draaidag, drie locaties. De "dagen" zijn hier de drie
+// locatieblokken, zodat de dagfilter je route volgt.
+// Teksten tussen aanhalingstekens zijn wat er gezegd wordt.
+// ============================================================
+
+const WELKOOP_ACTS = [
+  // ---------- LOCATIE 1 · HEERDE · Jordy & Boy · 09:00–11:30 ----------
+  {
+    id: "wk-opbouw", order: 1,
+    name: "Aankomst & opbouw Heerde",
+    priority: "normal",
+    location: "Zuppeldseweg 28, Heerde",
+    addr: "Zuppeldseweg 28, 8181 NH Heerde",
+    slots: [ { day: "loc1", time: "08:30 aanwezig · opbouw tot 09:00" } ],
+    note: "Het pad naar achteren oprijden en links parkeren. Daarna het smalle pad op richting de duivenhokken — het huis met de klimop poort. Om 08:30 zijn Jordy, Boy en Erwin er ook."
+  },
+  {
+    id: "wk-snuffelmat", order: 2,
+    name: "1 · Snuffelmat-editie",
+    priority: "high",
+    location: "Heerde — woonkamer / gang",
+    slots: [
+      { day: "loc1", time: "1 · Opening: Jordy's vlogcam eerst naar buiten, dan naar Boy — \"Binnen. Alweer?\"" },
+      { day: "loc1", time: "2 · Cam 2 introduceert: Jordy met camera in beeld, Boy zit rustig en kijkt hem aan — \"Ja Boy, het regent écht nog steeds.\"" },
+      { day: "loc1", time: "3 · Boy loopt teleurgesteld weg, camera terug naar Jordy — \"Wacht, ik heb een idee\"" },
+      { day: "loc1", time: "4 · Fixed: snuffelmat uit doos/kast + close van het verstoppen van de snacks (hard/jump cuts)" },
+      { day: "loc1", time: "5 · Fixed: mat op de grond, Jordy roept Boy — \"Kom maar op met die superneus, zoek ze maar!\"" },
+      { day: "loc1", time: "6 · POV vanuit Jordy + cam 2: Boy snuffelt · close op zijn neus · close van Boy die het snackje eet — \"Kijk hem zoeken! Goed bezig Boy\"" },
+      { day: "loc1", time: "7 · Outro naar zichzelf, Boy snuffelt verder — \"Nou, die is voorlopig even zoet. Wat doet jouw hond het liefst binnen?\"" }
+    ],
+    note: "ALT voor shot 1: direct het gezicht van Jordy, dan wijd met Boy die naar hem toe loopt en samen vanuit de open deur naar buiten kijken. Welke openingszin je pakt hangt af van het weer — de vier varianten staan in de Info-tab, net als de extra zinnen voor shot 3."
+  },
+  {
+    id: "wk-puzzel", order: 3,
+    name: "2 · Hondenpuzzel-editie",
+    priority: "high",
+    location: "Heerde — woonkamer",
+    slots: [
+      { day: "loc1", time: "1 · Opening: vlogcam naar buiten, dan naar Boy — \"Binnen. Alweer?\"" },
+      { day: "loc1", time: "2 · Cam 2 introduceert, Boy komt aanlopen met een speeltje in zijn mond — \"Ja Boy, het is weer lekker hondenweer buiten..\"" },
+      { day: "loc1", time: "3 · Boy springt richting Jordy, vol energie — \"Ja ja ja, jij wilt spelen, dat is duidelijk\"" },
+      { day: "loc1", time: "4 · Fixed: Pawzzler uit doos/kast halen en neerzetten — \"Wacht, ik heb wat voor je.\"" },
+      { day: "loc1", time: "5 · Close POV vanuit Jordy zelf: brokjes erin verstoppen — \"Eens kijken hoe snel jij deze puzzel doorhebt Boy.\"" },
+      { day: "loc1", time: "6 · POV + cam 2: Boy aan het snuffelen · close op zijn neus — \"Einstein op vier poten! Nou, die had je snel door!\"" },
+      { day: "loc1", time: "7 · Outro, Boy puzzelt verder — \"Boy vermaakt zich wel! Hoe slepen jullie je hond deze natte/winderige/koude dagen door? Deel je beste tips!\"" }
+    ],
+    note: "Twee tekstwijzigingen van de klant zitten al verwerkt: shot 2 is \"lekker hondenweer\" geworden in plaats van \"code gratis peeling\" (dat was te generiek), en shot 6 eindigt op \"Nou, die had je snel door!\". Extra zinnen voor shot 4 staan in de Info-tab."
+  },
+  {
+    id: "wk-kong", order: 4,
+    name: "3 · KONG-editie",
+    priority: "high",
+    location: "Heerde — woonkamer / bank",
+    slots: [
+      { day: "loc1", time: "1 · Jordy op de bank met vlogcam, buiten is het al donker, Boy staat ernaast met verwachtingsvolle blik — \"Binnen. Alweer?\"" },
+      { day: "loc1", time: "2 · Cam 2 introduceert, Boy zit rustig en kijkt Jordy aan — \"Het is al donker, maar jij bent nog lang niet uitgespeeld, hè?\"" },
+      { day: "loc1", time: "3 · Snelle cuts: Boy loopt weg, komt terug en laat een bal voor Jordy's voeten vallen — \"Maar deze vleermuis is nog lang niet klaar met spelen.\"" },
+      { day: "loc1", time: "4 · Jordy staat op van de bank, Boy loopt enthousiast mee (cam 2) — \"Wacht maar, ik heb iets voor je.\"" },
+      { day: "loc1", time: "5 · Fixed compilatie met Boy naast Jordy: de KONG wordt met een snack gevuld — \"Tijd voor de KONG-challenge, Boy! Laat maar eens zien wat je kunt.\"" },
+      { day: "loc1", time: "6 · POV + cam 2: Boy probeert de vulling eruit te krijgen · close op zijn neus — \"Kijk, hier ben je wel even mee bezig.\"" },
+      { day: "loc1", time: "7 · Jordy draait de camera naar zichzelf, loopt terug naar de bank en gaat zitten, outro" },
+      { day: "loc1", time: "8 · Final shot: Boy in zijn mand, nog bezig met de KONG — \"Boy is voorlopig wel even bezig! Wat is jullie ultieme tip tegen honden-verveling binnen?\"" }
+    ],
+    note: "LET OP — deze editie vraagt om donker of slecht weer, maar je draait 09:00–11:30 en de zon komt om 07:29 op. Je zult het binnen donker moeten maken (gordijnen) of het op slecht weer moeten spelen in plaats van op avond. ALT voor shot 5: \"Alsjeblieft Boy, de chef-kok heeft zich weer overtroffen met deze KONG-specialiteit!\""
+  },
+
+  // ---------- LOCATIE 2 · KANTOOR APELDOORN · Guus · 12:30–14:30 ----------
+  {
+    id: "wk-guus", order: 5,
+    name: "4 · Een werkdag door de ogen van kantoorhond Guus",
+    priority: "high",
+    location: "Laan van de Stier 60, Apeldoorn — kantoor",
+    addr: "Laan van de Stier 60, 7324 CV Apeldoorn",
+    slots: [
+      { day: "loc2", time: "1 · Opening: Guus zit rustig voor het kantoorpand (voordeur) — copy: \"Je hebt een kantoorbaan. En neemt die héél serieus.\"" },
+      { day: "loc2", time: "2 · Bewegend shot: meelopen met Guus naar binnen door de voordeur — copy: \"08:29 — Stipt op tijd\"" },
+      { day: "loc2", time: "3 · Receptie: begroeten, enthousiaste sterrenontvangst — copy: \"08:30 — Eerst even iedereen begroeten\"" },
+      { day: "loc2", time: "4 · Close: liftdeuren gaan open, Guus loopt enthousiast naar buiten — copy: \"08:40 — Door naar de volgende afdeling\"" },
+      { day: "loc2", time: "5 · Lange gang: Guus loopt langs de afdelingen en somt ze op, begroet af en toe een collega — copy: \"09:00 — Relatiebeheer, mijn specialiteit\"" },
+      { day: "loc2", time: "6 · Klantenservice: twee collega's in gesprek, ruggen naar de camera; aan de andere kant van het bureau zit Guus op een stoel aandachtig mee te kijken — copy: \"11:00 — Belangrijk overleg. Weinig inbreng, wel aanwezig.\"" },
+      { day: "loc2", time: "7 · Buiten rondom het kantoor: Guus wandelt en geniet met zijn gezicht in de wind. Meerdere shots — copy: \"12:30 — Lunchen en wandelen\"" },
+      { day: "loc2", time: "8 · Guus ligt knock-out te slapen op zijn kussen. Wijd naar close-up op zijn gezicht — copy: \"14:00 — Energie besparen voor de middagshift\"" },
+      { day: "loc2", time: "9 · Guus op schoot bij het baasje, twee pootjes op het bureau, kijkt naar de monitor — copy: \"16:00 — Laatste uurtje knallen\"" },
+      { day: "loc2", time: "10 · Guus komt het kantoor uitgerend (voordeur) — copy: \"17:00 — Piepende bandjes naar huis\"" },
+      { day: "loc2", time: "11 · Guus zit in de auto en kijkt in de camera (parkeergarage/deck) — copy: \"Medewerker van de maand. Alweer. Zou jij Guus als collega willen?\"" }
+    ],
+    note: "De gesproken tekst is nog t.b.d. en wordt een voice-over, dus op locatie heb je alleen beeld nodig. De tijden in de copy zijn de verhaaltijden van Guus' dag, niet jouw draaischema — je draait alles tussen 12:30 en 14:30, dus ook het \"17:00 naar huis\"-shot. Klantwens: schrijfwijze van de tijden aanhouden als \"9.00\". Optioneel nog een mening over de draaideur (shot 2) en over de lift (shot 4) in de VO toevoegen. Parkeren kan in de parkeergarage."
+  },
+
+  // ---------- LOCATIE 3 · LOOLAAN APELDOORN · Lars · 15:00–17:00 ----------
+  {
+    id: "wk-lente", order: 6,
+    name: "5 · De lente begint nu",
+    priority: "high",
+    location: "Loolaan 488, Apeldoorn (3e verdieping) — balkon",
+    addr: "Loolaan 488, 7315 AE Apeldoorn",
+    slots: [
+      { day: "loc3", time: "1 · Buiten beeld \"3, 2, 1 actie\": Lars wacht in beeld om te beginnen. Shot vanuit cam 2, die het camerateam filmt — soort BTS-shot" },
+      { day: "loc3", time: "2 · Interview shot main cam: Lars zet een lege bloempot op tafel — \"De lente begint nu!\"" },
+      { day: "loc3", time: "3 · Close op de bloempot" },
+      { day: "loc3", time: "4 · Wijd: zakje biologische bloembollen omhoog + close-up van de bollen — \"Tenminste, als je het aan deze bloembollen vraagt.\"" },
+      { day: "loc3", time: "5 · Snelle cuts: pot vullen met aarde, bollen planten, afdekken. Close en wijd afwisselen, snijden in de beweging, diverse hoeken, mag speels — \"Want ook op je balkon plant je nu alvast het voorjaar.\"" },
+      { day: "loc3", time: "6 · Water geven en de pot op het balkon zetten. Jumpcuts, fixed shots — \"Een pot, wat aarde, water en een beetje geduld...\"" },
+      { day: "loc3", time: "7 · Close pot → Lars → close pot → wipe naar dezelfde pot met bloeiende voorjaarsbloemen. Potten aan de zijkant wisselen — \"...en straks geniet je van je eigen voorjaarsbloemen!\"" },
+      { day: "loc3", time: "8 · Eindresultaat shot: wijd van Lars" },
+      { day: "loc3", time: "9 · Off cam BTS: er wordt \"cut\" of \"it's a wrap\" geroepen, Lars kijkt verbaasd — \"Dat was het?\" / \"was ik hier nu echt voor nodig?\"" }
+    ],
+    note: "ALT begin: starten bij het einde, met Lars off camera \"was ik hier nu echt voor nodig?\". Speels idee voor de wissel in shot 7: de pot op een hondje zetten dat zelf niet in beeld is. LET OP het licht — je draait 15:00–17:00 en de zon gaat om 17:12 onder, dus op een balkon op 3 hoog loopt het licht aan het eind weg. Plan shot 7 en 8 (het eindresultaat) niet als allerlaatste. Parkeren kan aan de straat voor de flat."
+  }
+];
+
+const WELKOOP_INFO = {
+  title: "Welkoop socials flight 3 — vr 30 oktober 2026",
+  groups: [
+    {
+      label: "Dagschema",
+      text: "08:30 – 09:00  Dagstart en opbouw (locatie 1)\n09:00 – 11:30  Shoot met Jordy & Boy | Binnen. Alweer?!\n11:30 – 12:00  Verplaatsing naar locatie 2\n12:00 – 12:30  Lunch\n12:30 – 14:30  Shoot met Guus | Een werkdag door de ogen van...\n14:30 – 15:00  Verplaatsing naar locatie 3\n15:00 – 17:00  Shoot met Lars | De lente begint nu\n17:00  Wrap"
+    },
+    {
+      label: "Locaties & parkeren",
+      text: "1 · Zuppeldseweg 28, 8181 NH Heerde (call 08:30 — Jordy, Boy, Leroy & Erwin)\nHet pad naar achteren oprijden, links parkeren. Dan het smalle pad op richting de duivenhokken: het huis met de klimop poort.\n\n2 · Laan van de Stier 60, 7324 CV Apeldoorn (call 12:30 — Samantha & Guus)\nParkeren kan in de parkeergarage.\n\n3 · Loolaan 488, 7315 AE Apeldoorn, 3e verdieping (call 15:00 — Lars)\nParkeren kan aan de straat voor de flat."
+    },
+    {
+      label: "Route (open in Google Maps)",
+      links: [
+        { label: "Oranjelaan 2 → Heerde → kantoor → Loolaan", url: "https://www.google.com/maps/dir/Oranjelaan+2,+Apeldoorn/Zuppeldseweg+28,+Heerde/Laan+van+de+Stier+60,+Apeldoorn/Loolaan+488,+Apeldoorn" }
+      ]
+    },
+    {
+      label: "Openingszinnen naar het weer",
+      text: "Neem deze alle vier op bij Jordy, dan kan de edit mee met het weer van die dag. Geldt voor alle drie de Jordy-concepten.\n\nRegen — \"Binnen. Alweer? Ja Boy, jij hebt ook geen zin in natte pootjes.\" → \"Ja Boy, als we nu zouden gaan verander je in een verzopen kat.\"\n\nMist — \"Binnen. Alweer? Ja Boy, het lijkt wel een horrorfilm buiten, daar houden we niet van.\" → \"Ja Boy, we kunnen niet allemaal navigeren op onze neus.\"\n\nStorm / harde wind — \"Binnen. Alweer? Ja Boy, het is weer code 'gratis peeling' buiten.\" → \"Ja Boy, je waait nog van je riem buiten.\"\n\nSneeuw — \"Binnen. Alweer? Ja Boy, buiten word je de eerste sneeuwpop op vier poten.\" → \"Ja Boy, je houdt niet van ijspootjes.\"\n\nVerwachting voor vr 30 okt: 10% kans op neerslag, 6–14 graden, wind 10 km/h. Dus waarschijnlijk niet eens slecht weer — neem ze toch allemaal op."
+    },
+    {
+      label: "Extra zinnen",
+      text: "Snuffelmat, shot 3 (en puzzel, shot 4):\n\"Gelukkig voor jou ben ik een wandelende bron van vermaak.\"\n\"Komt goed, ik sleep je de middag wel door.\"\n\"Als je dacht dat je je ging vervelen Boy, dan had je het mis\"\n\nKONG, alternatief voor shot 5:\n\"Alsjeblieft Boy, de chef-kok heeft zich weer overtroffen met deze KONG-specialiteit!\""
+    },
+    {
+      label: "Twee camera's",
+      text: "Jordy filmt zichzelf als vlogger/influencer, jij bent de tweede camera. Jij filmt zowel Jordy als B-roll en Boy. In de shotlist staat per shot welke camera wat doet; \"POV vanuit Jordy\" is dus zijn eigen vlogcam."
+    },
+    {
+      label: "Let op",
+      text: "De callsheet noemt Samantha als model op locatie 2, maar in het shootschema staat \"Shoot met Sabrina & Guus\". Even checken bij Erwin wie er is.\n\nVraag van Erwin over de serie: 'Binnen. Alweer?' moet herkenbaar worden als serie, maar de video's mogen in de eerste seconden niet op elkaar gaan lijken. Start iedere aflevering met een uniek, opvallend moment uit díe video en gebruik de vaste serietitel kort als herkenning — geen standaard intro. De eerste 2–3 seconden moeten nieuwsgierig maken naar wat er in déze aflevering gebeurt.\n\nDe KONG-editie vraagt om donker, maar wordt 's ochtends gedraaid. En op het balkon loopt het licht weg richting 17:00."
+    },
+    {
+      label: "Contact & facturatie",
+      text: "Erwin de Groot (producer) — 06 22061391 · edegroot@welkoop.nl\nWelkoop algemeen — 088 2324800\n\nFacturen naar facturen@welkoop.nl met Erwin in de CC. PO-nummer 13271 op de factuur vermelden.\nWelkoop Retail B.V., Laan van de Stier 60, 7324 CV Apeldoorn."
+    }
+  ]
+};
+
+// ============================================================
 // PROJECT-REGISTER
 // ============================================================
 
 const PROJECTS = [
+  {
+    id: "welkoop-f3",
+    name: "Welkoop socials flight 3",
+    subtitle: "Vr 30 okt · 3 locaties · 5 concepten · Jordy & Boy, Guus, Lars",
+    icon: "🐾",
+    stateKey: "welkoop_f3_v1",
+    doneMode: "all", // alle shots per concept nodig
+    days: [
+      { key: "loc1", label: "1 · Heerde", date: "2026-10-30" },
+      { key: "loc2", label: "2 · Kantoor", date: "2026-10-30" },
+      { key: "loc3", label: "3 · Loolaan", date: "2026-10-30" }
+    ],
+    crew: [
+      { id: "leroy", name: "Leroy", color: "#3ddc84", soft: "" },
+      { id: "jordy", name: "Jordy (cam 2)", color: "#ffa94d", soft: "" },
+      { id: "erwin", name: "Erwin (producer)", color: "#5b9bff", soft: "" }
+    ],
+    info: WELKOOP_INFO,
+    acts: WELKOOP_ACTS
+  },
   {
     id: "groen-gedaan",
     name: "Groen Gedaan",
