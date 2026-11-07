@@ -253,7 +253,8 @@ function isActPast(act) {
 let lastPop = null;
 
 // afgeronde/voorbije kaarten die de gebruiker tijdelijk heeft uitgeklapt
-let expandedCards = new Set();
+let openActs = new Set();      // welke act-kaarten staan uitgeklapt
+let openActsPrimed = false;    // is de standaard-open kaart al gekozen?
 
 function toggleSlot(actId, idx) {
   const k = slotKey(actId, idx);
@@ -306,7 +307,7 @@ function showHome() {
 
 function setHomeTab(tab) {
   homeTab = tab;
-  document.querySelectorAll(".home-tabs .tab").forEach(b => {
+  document.querySelectorAll(".home-tabs .seg-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.homeTab === tab);
   });
   renderHome();
@@ -339,8 +340,15 @@ function renderHome() {
 
   for (const p of list) {
     const s = loadState(p);
-    const total = p.acts.length;
-    const done = p.acts.filter(a => isActDoneIn(p, s, a)).length;
+    // op shot-niveau tellen, net als in de kop van een klus — dat beweegt
+    // mee met wat je op de set doet in plaats van alleen bij hele onderdelen
+    let total = 0, done = 0;
+    for (const a of p.acts) {
+      a.slots.forEach((_, i) => {
+        total++;
+        if (entryVal(s.slots, slotKey(a.id, i))) done++;
+      });
+    }
     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
     const arch = isArchived(p);
     const card = document.createElement("div");
@@ -388,7 +396,8 @@ function openProject(id) {
   stopHomeSync();
   project = p;
   state = loadState(p);
-  expandedCards = new Set();
+  openActs = new Set();
+  openActsPrimed = false;
   document.body.classList.remove("home-mode");
   document.getElementById("appTitle").textContent = p.name;
 
@@ -398,8 +407,7 @@ function openProject(id) {
   buildTabs();
   restoreFilterUI();
   // filterpaneel dicht bij openen van een klus
-  document.getElementById("filterPanel").classList.remove("open");
-  document.getElementById("filterToggle").classList.remove("open");
+  setFilterSheet(false);
 
   // altijd starten op de lijst-tab
   activateTab("list");
@@ -410,9 +418,9 @@ function openProject(id) {
 
 // ---- Tabs (per klus) ----
 function buildTabs() {
-  document.querySelector('.tab[data-tab="map"]').style.display = project.map ? "" : "none";
-  document.querySelector('.tab[data-tab="timetable"]').style.display = project.timetable ? "" : "none";
-  document.querySelector('.tab[data-tab="info"]').style.display = project.info ? "" : "none";
+  document.querySelector('.dock-btn[data-tab="map"]').style.display = project.map ? "" : "none";
+  document.querySelector('.dock-btn[data-tab="timetable"]').style.display = project.timetable ? "" : "none";
+  document.querySelector('.dock-btn[data-tab="info"]').style.display = project.info ? "" : "none";
 
   if (project.map) {
     document.getElementById("mapImg").src = project.map.image;
@@ -438,13 +446,17 @@ function buildTabs() {
 }
 
 function activateTab(target) {
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === target));
+  document.querySelectorAll(".dock-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === target));
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById("view-" + target).classList.add("active");
+  // filterknop hoort alleen bij de lijst
+  document.getElementById("filterToggle").classList.toggle("hide", target !== "list");
   window.scrollTo(0, 0);
 }
 
 // ---- Filters ----
+// Blok-navigatie: tegelijk het dagfilter én de voortgang per blok,
+// zodat je niet hoeft te filteren om te zien hoe ver je ergens bent.
 function buildDayChips() {
   const row = document.getElementById("dayChips");
   row.innerHTML = "";
@@ -455,28 +467,31 @@ function buildDayChips() {
   }
   row.style.display = "";
   const mk = (key, label) => {
+    const { done, total } = shotStats(key);
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
     const btn = document.createElement("button");
+    btn.className = "block" + (total > 0 && done === total ? " done" : "");
     btn.dataset.day = key;
-    // "Vr 28 aug" → date-pill met dagdeel boven en nummer eronder
-    const m = /^(\S{2,3})\s+(\d{1,2})/.exec(label);
-    if (m) {
-      btn.className = "chip day-pill";
-      btn.innerHTML = `<span class="dp-top">${escapeHtml(m[1])}</span><span class="dp-num">${escapeHtml(m[2])}</span>`;
-    } else {
-      btn.className = "chip";
-      btn.textContent = label;
-    }
+    btn.innerHTML = `
+      <span class="block-name">${escapeHtml(label)}</span>
+      <span class="block-count">${done}/${total}</span>
+      <span class="block-meter"><i style="width:${pct}%"></i></span>`;
     btn.addEventListener("click", () => {
-      row.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
       state.filters.day = key;
       saveState();
       render();
     });
     row.appendChild(btn);
   };
-  mk("all", "Alle");
+  mk("all", "Alles");
   project.days.forEach(d => mk(d.key, d.label));
+  markActiveDay();
+}
+
+function markActiveDay() {
+  document.querySelectorAll("#dayChips .block").forEach(b => {
+    b.classList.toggle("active", b.dataset.day === state.filters.day);
+  });
 }
 
 function buildWhoChips() {
@@ -721,26 +736,69 @@ function updateFilterBadge() {
   el.textContent = n;
   el.classList.toggle("hidden", n === 0);
 }
+function setFilterSheet(open) {
+  document.getElementById("filterPanel").classList.toggle("open", open);
+  document.getElementById("filterScrim").classList.toggle("open", open);
+}
 document.getElementById("filterToggle").addEventListener("click", () => {
-  const panel = document.getElementById("filterPanel");
-  const open = panel.classList.toggle("open");
-  document.getElementById("filterToggle").classList.toggle("open", open);
+  setFilterSheet(!document.getElementById("filterPanel").classList.contains("open"));
 });
+document.getElementById("filterScrim").addEventListener("click", () => setFilterSheet(false));
+document.getElementById("filterDone").addEventListener("click", () => setFilterSheet(false));
 
 // ---- Render ----
 function render() {
   if (!project) return renderHome();
   renderProgress();
+  updateBlockCounts();
   renderList();
   updateFilterBadge();
 }
 
+// tellers bijwerken zonder de rij opnieuw op te bouwen, anders
+// springt de horizontale scrollpositie terug bij elk vinkje
+function updateBlockCounts() {
+  document.querySelectorAll("#dayChips .block").forEach(b => {
+    const { done, total } = shotStats(b.dataset.day);
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    b.querySelector(".block-count").textContent = `${done}/${total}`;
+    b.querySelector(".block-meter > i").style.width = pct + "%";
+    b.classList.toggle("done", total > 0 && done === total);
+  });
+  markActiveDay();
+}
+
+// Voortgang op shot-niveau: dat beweegt mee met wat je op de set doet.
+// Acts-klaar blijft als onderregel staan, want dat is de grovere mijlpaal.
+function shotStats(dayKey) {
+  let done = 0, total = 0;
+  for (const act of project.acts) {
+    act.slots.forEach((slot, i) => {
+      if (dayKey && dayKey !== "all" && slot.day !== dayKey) return;
+      total++;
+      if (isSlotDone(state, act.id, i)) done++;
+    });
+  }
+  return { done, total };
+}
+
+const RING_LEN = 125.66; // 2πr bij r=20
+
 function renderProgress() {
-  const total = project.acts.length;
-  const done = project.acts.filter(isActDone).length;
-  document.getElementById("progressText").textContent = `${done} / ${total} vastgelegd`;
+  const { done, total } = shotStats(null);
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("statShots").textContent = done;
+  document.getElementById("statShotsTotal").textContent = `/ ${total} shots`;
+  document.getElementById("ringPct").textContent = pct + "%";
+  const ring = document.getElementById("ringFill");
+  ring.style.strokeDashoffset = RING_LEN - (RING_LEN * pct) / 100;
+  ring.classList.toggle("full", total > 0 && done === total);
+
+  const actsTotal = project.acts.length;
+  const actsDone = project.acts.filter(isActDone).length;
+  const label = project.statusFlow ? "bedrijven rond" : "onderdelen klaar";
+  document.getElementById("statActs").textContent =
+    done === 0 ? "nog niets vastgelegd" : `${actsDone} van ${actsTotal} ${label}`;
 }
 
 function renderList() {
@@ -748,8 +806,14 @@ function renderList() {
   const acts = filterActs();
   container.innerHTML = "";
   if (acts.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--muted);">Geen acts in deze filter.</div>`;
+    container.innerHTML = `<div class="list-empty">Niets in deze filter.</div>`;
     return;
+  }
+  // bij het openen van een klus staat alleen het eerstvolgende onderdeel open
+  if (!openActsPrimed) {
+    openActsPrimed = true;
+    const first = defaultOpenAct(acts);
+    if (first) openActs.add(first);
   }
   // scheidingsbalk vóór het eerste afgeronde/voorbije item
   const outCount = acts.filter(a => isActDone(a) || isActPast(a)).length;
@@ -770,39 +834,27 @@ function renderList() {
   lastPop = null;
 }
 
+// Welke kaart staat standaard open? De eerste die nog niet af is.
+// Zo zie je bij het openen van een klus meteen waar je mee bezig bent,
+// in plaats van 43 shots onder elkaar.
+function defaultOpenAct(acts) {
+  const next = acts.find(a => !isActDone(a) && !isActPast(a));
+  return next ? next.id : null;
+}
+
 function renderActCard(act) {
   const done = isActDone(act);
   const past = !done && isActPast(act);
   const out = done || past;
+  const open = openActs.has(act.id);
   const multiDay = project.days.length > 1;
   // de dag per shot herhalen heeft alleen zin als de shots van deze act
   // écht over meerdere dagen lopen — anders is het ruis op de regel
   const multiDaySlots = new Set(act.slots.map(s => s.day)).size > 1;
   const crew = crewOf(act);
 
-  // afgerond/voorbij en niet handmatig uitgeklapt → compacte regel
-  if (out && !expandedCards.has(act.id)) {
-    const row = document.createElement("div");
-    row.className = "act-card collapsed" + (done ? " c-done" : " c-past");
-    if (crew) row.style.borderColor = `color-mix(in srgb, ${crew.color} 40%, var(--line))`;
-    row.innerHTML = `
-      <div class="act-check ${done ? "checked" : ""}" data-toggle="${act.id}">✓</div>
-      <span class="c-title">${escapeHtml(act.name)}</span>
-      <span class="c-state">${done ? "klaar" : "voorbij"}</span>
-      <span class="c-chev">▾</span>`;
-    row.querySelector('[data-toggle]').addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleAct(act);
-    });
-    row.addEventListener('click', () => {
-      expandedCards.add(act.id);
-      render();
-    });
-    return row;
-  }
-
   const card = document.createElement("div");
-  card.className = "act-card" + (done ? " done" : "") + (past ? " past" : "") + (crew ? " assigned" : "");
+  card.className = "act-card" + (open ? " open" : "") + (done ? " done" : "") + (past ? " past" : "") + (crew ? " assigned" : "");
   if (crew) {
     card.style.background = `color-mix(in srgb, ${crew.color} 12%, var(--card))`;
     card.style.borderColor = `color-mix(in srgb, ${crew.color} 55%, var(--line))`;
@@ -840,9 +892,9 @@ function renderActCard(act) {
 
   card.innerHTML = `
     ${crew ? `<div class="assign-strip" style="background:${crew.color}; color:${textOn(crew.color)}">${escapeHtml(crew.name)}</div>` : ""}
-    <div class="act-header">
+    <div class="act-head" data-fold>
       <div class="act-check ${done ? "checked" : ""}${lastPop === `act:${act.id}` ? " pop" : ""}" data-toggle="${act.id}">✓</div>
-      <div class="act-info" data-open-act>
+      <div class="act-body">
         <h3 class="act-title">${escapeHtml(act.name)}${
           act.priority === "conditional"
             ? `<span class="priority-badge conditional">Conditioneel</span>`
@@ -855,14 +907,16 @@ function renderActCard(act) {
         ${dateOverride(act.id) ? `<div class="date-badge">Afwijkende datum · ${fmtDate(dateOverride(act.id))}</div>` : ""}
         ${stepBar}
       </div>
-      ${out ? `<button class="collapse-btn" data-collapse title="Inklappen">▴</button>` : ""}
+      <span class="act-chev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
     </div>
-    <div class="slots"></div>
-    ${noteText(act.id) ? `<div class="note-preview">${escapeHtml(noteText(act.id))}</div>` : ""}
-    ${act.note ? `<div class="note-extra">${escapeHtml(act.note)}</div>` : ""}
-    <div class="act-actions">
-      <button data-details="${act.id}">Notities / details</button>
-    </div>
+    <div class="act-fold"><div><div class="act-fold-inner">
+      <div class="slots"></div>
+      ${noteText(act.id) ? `<div class="note-preview">${escapeHtml(noteText(act.id))}</div>` : ""}
+      ${act.note ? `<div class="note-extra">${escapeHtml(act.note)}</div>` : ""}
+      <div class="act-actions">
+        <button data-details="${act.id}">Notities / details</button>
+      </div>
+    </div></div></div>
   `;
 
   // render slots
@@ -873,8 +927,9 @@ function renderActCard(act) {
     const sPast = !sDone && isSlotPast(slot);
     const sEl = document.createElement("div");
     sEl.className = "slot" + (sDone ? " captured" : "") + (sPast ? " past" : "");
+    sEl.dataset.slot = `${act.id}|${idx}`;
     sEl.innerHTML = `
-      <div class="slot-check ${sDone ? "checked" : ""}${lastPop === `slot:${slotKey(act.id, idx)}` ? " pop" : ""}" data-slot="${act.id}|${idx}">✓</div>
+      <div class="slot-check ${sDone ? "checked" : ""}${lastPop === `slot:${slotKey(act.id, idx)}` ? " pop" : ""}">✓</div>
       <span class="slot-time">${escapeHtml(slot.time)}</span>
       ${multiDaySlots ? `<span class="slot-loc">${dayLabel(slot.day)}${sPast ? " · voorbij" : ""}</span>` : (sPast ? `<span class="slot-loc">voorbij</span>` : "")}
     `;
@@ -886,23 +941,24 @@ function renderActCard(act) {
     e.stopPropagation();
     toggleAct(act);
   });
-  card.querySelectorAll('[data-slot]').forEach(el => {
+  // de hele kop klapt open/dicht — groot raakvlak, werkt met één duim
+  card.querySelector('[data-fold]').addEventListener('click', () => {
+    if (openActs.has(act.id)) openActs.delete(act.id);
+    else openActs.add(act.id);
+    render();
+  });
+  // de hele shotregel is het raakvlak, niet alleen het bolletje
+  card.querySelectorAll('.slot[data-slot]').forEach(el => {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const [aid, idx] = el.dataset.slot.split("|");
       toggleSlot(aid, parseInt(idx, 10));
     });
   });
-  card.querySelector('[data-details]').addEventListener('click', () => openModal(act));
-  card.querySelector('[data-open-act]').addEventListener('click', () => openModal(act));
-  const collapseBtn = card.querySelector('[data-collapse]');
-  if (collapseBtn) {
-    collapseBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      expandedCards.delete(act.id);
-      render();
-    });
-  }
+  card.querySelector('[data-details]').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openModal(act);
+  });
 
   return card;
 }
@@ -1071,7 +1127,7 @@ document.getElementById("modalSave").addEventListener("click", () => {
 });
 
 // ---- Tabs (alleen de klus-tabs; het startscherm heeft eigen tabs) ----
-document.querySelectorAll(".tabs.project-only .tab").forEach(t => {
+document.querySelectorAll(".dock .dock-btn").forEach(t => {
   t.addEventListener("click", () => activateTab(t.dataset.tab));
 });
 
@@ -1347,9 +1403,18 @@ document.addEventListener("visibilitychange", () => {
   if (project) pullState(); else pullHomeState();
 });
 
+// ---- Kop laten krimpen zodra je scrolt ----
+let heroCompact = false;
+window.addEventListener("scroll", () => {
+  const c = window.scrollY > 36;
+  if (c === heroCompact) return;
+  heroCompact = c;
+  document.body.classList.toggle("scrolled", c);
+}, { passive: true });
+
 // ---- Init ----
 homeState = loadHomeState();
-document.querySelectorAll(".home-tabs .tab").forEach(b => {
+document.querySelectorAll(".home-tabs .seg-btn").forEach(b => {
   b.addEventListener("click", () => setHomeTab(b.dataset.homeTab));
 });
 setupStaticFilters();
