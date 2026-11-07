@@ -73,16 +73,13 @@ body {
   max-width: 1000px;
   aspect-ratio: 1;
   transform: translateX(-50%);
+  /* Een verloop is al zacht; een blur-filter hierop dwong iOS om bij elke
+     scrollstap het hele scherm opnieuw te tekenen, wat de kop liet smeren.
+     Zelfde look, zonder die kosten. */
   background:
-    radial-gradient(circle at 50% 50%, rgba(123,92,255,0.62) 0%, rgba(109,77,255,0.3) 28%, rgba(86,58,214,0.12) 48%, rgba(109,77,255,0) 70%);
-  filter: blur(26px);
+    radial-gradient(circle at 50% 50%, rgba(123,92,255,0.5) 0%, rgba(109,77,255,0.28) 26%, rgba(86,58,214,0.12) 46%, rgba(109,77,255,0) 70%);
   pointer-events: none;
   z-index: 0;
-  animation: auraDrift 18s ease-in-out infinite alternate;
-}
-@keyframes auraDrift {
-  from { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.9; }
-  to   { transform: translateX(-46%) translateY(26px) scale(1.08); opacity: 1; }
 }
 
 .topbar, main, .dock, .filter-fab, .sheet, .toast { position: relative; z-index: 1; }
@@ -97,6 +94,9 @@ body.home-mode .back-btn { display: none !important; }
   z-index: 30;
   padding: calc(env(safe-area-inset-top) + 10px) 14px 8px;
   transition: padding 0.35s var(--spring);
+  /* eigen tekenlaag, zodat de kop niet smeert over de lijst eronder */
+  transform: translateZ(0);
+  will-change: transform;
 }
 /* tijdens scrollen een vloeiende dekking onder de kop, zodat shots
    er niet zichtbaar achter doorlopen */
@@ -171,6 +171,9 @@ body.home-mode #appTitle {
   margin-top: 12px;
   max-height: 80px;
   overflow: hidden;
+  /* hard afsnijden, anders schuift de inhoud tijdens het inklappen
+     over de blokrij heen */
+  contain: paint;
   transition: max-height 0.38s var(--spring), opacity 0.26s, margin-top 0.38s var(--spring);
 }
 /* zodra je gaat scrollen krimpt de kop weg; de blokrij blijft staan,
@@ -185,14 +188,16 @@ body.scrolled:not(.home-mode) .block-row { margin-top: 9px; }
 .ring { width: 52px; height: 52px; transform: rotate(-90deg); }
 .ring circle { fill: none; stroke-width: 4; stroke-linecap: round; }
 .ring-bg { stroke: rgba(255,255,255,0.09); }
+/* Geen drop-shadow op de ring: WebKit laat een gefilterd element buiten
+   de afsnijding van zijn ouder tekenen, waardoor de ring tijdens het
+   inklappen dwars over de blokrij bleef staan. */
 .ring-fill {
   stroke: var(--iris-lift);
   stroke-dasharray: 125.66;
   stroke-dashoffset: 125.66;
   transition: stroke-dashoffset 0.75s var(--spring), stroke 0.4s;
-  filter: drop-shadow(0 0 5px var(--iris-glow));
 }
-.ring-fill.full { stroke: var(--green); filter: drop-shadow(0 0 6px rgba(46,224,124,0.5)); }
+.ring-fill.full { stroke: var(--green); }
 .ring-pct {
   position: absolute; inset: 0;
   display: grid; place-items: center;
