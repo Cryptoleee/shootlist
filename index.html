@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="mobile-web-app-capable" content="yes" />
 <link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300..800&display=swap" rel="stylesheet" />
@@ -70,7 +72,14 @@
       </div>
       <div id="iconRow" class="icon-row"></div>
 
-      <label class="notes-label" for="buildSource">Briefing plakken</label>
+      <input type="file" id="buildFile" accept=".pdf,.docx,.txt,.md,.csv" hidden />
+      <button id="buildDrop" class="dropzone" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <span class="dz-main">Briefing van de klant inladen</span>
+        <span class="dz-sub">PDF, Word of platte tekst</span>
+      </button>
+
+      <label class="notes-label" for="buildSource">Of plak de briefing</label>
       <textarea id="buildSource" class="field area" spellcheck="false"
         placeholder="# Locatie of draaidag&#10;## Onderdeel&#10;Shot die je wilt maken&#10;Nog een shot"></textarea>
       <div class="build-hint">
@@ -186,6 +195,7 @@
 </div>
 
 <script src="data.js"></script>
+<script src="import.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

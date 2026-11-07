@@ -161,8 +161,13 @@ function parseBriefing(text) {
     act.slots.push({ day: day.key, time: shot });
   }
 
-  if (!days.length) days.push({ key: "b1", label: "Draaidag" });
-  return { days, acts: acts.filter(a => a.slots.length) };
+  const kept = acts.filter(a => a.slots.length);
+  // blokken zonder shots eruit — een documenttitel bovenaan de briefing
+  // levert er anders eentje op die leeg blijft
+  const used = new Set(kept.flatMap(a => a.slots.map(s => s.day)));
+  const keptDays = days.filter(d => used.has(d.key));
+  if (!keptDays.length) keptDays.push({ key: "b1", label: "Draaidag" });
+  return { days: keptDays, acts: kept };
 }
 
 function briefingToProject(name, icon, source, existingId) {
@@ -1686,7 +1691,73 @@ window.addEventListener("scroll", () => {
   document.body.classList.toggle("scrolled", c);
 }, { passive: true });
 
+// ---- Briefing uit een bestand ----
+// Het resultaat gaat altijd eerst het tekstvak in, nooit meteen de klus in:
+// zo zie je wat eruit kwam en kun je het bijschaven voordat je opslaat.
+async function handleBriefingFile(file) {
+  if (!file) return;
+  const drop = document.getElementById("buildDrop");
+  const main = drop.querySelector(".dz-main");
+  const sub = drop.querySelector(".dz-sub");
+  const reset = () => {
+    drop.classList.remove("busy", "over");
+    main.textContent = "Briefing van de klant inladen";
+    sub.textContent = "PDF, Word of platte tekst";
+  };
+  drop.classList.add("busy");
+  main.textContent = file.name;
+  sub.textContent = "Bezig met lezen…";
+  try {
+    const text = await readBriefingFile(file, (n, total) => {
+      sub.textContent = `Pagina ${n} van ${total}…`;
+    });
+    if (!text.trim()) throw new Error("Er zat geen leesbare tekst in dit bestand.");
+    const area = document.getElementById("buildSource");
+    area.value = area.value.trim() ? area.value.trim() + "\n\n" + text : text;
+    const nameField = document.getElementById("buildName");
+    if (!nameField.value.trim()) {
+      nameField.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+    }
+    renderBuildPreview();
+    buzz(16);
+    reset();
+    const { acts } = parseBriefing(text);
+    const shots = acts.reduce((n, a) => n + a.slots.length, 0);
+    showToast(`${shots} shots uit ${file.name} — check ze even`);
+    area.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    reset();
+    showToast(err && err.message ? err.message : "Kon dit bestand niet lezen", null, null, 7000);
+  }
+}
+
 // ---- Bouwer-knoppen ----
+document.getElementById("buildDrop").addEventListener("click", () =>
+  document.getElementById("buildFile").click());
+document.getElementById("buildFile").addEventListener("change", e => {
+  handleBriefingFile(e.target.files[0]);
+  e.target.value = ""; // zodat hetzelfde bestand nog eens kan
+});
+["dragenter", "dragover"].forEach(ev =>
+  document.getElementById("buildDrop").addEventListener(ev, e => {
+    e.preventDefault();
+    document.getElementById("buildDrop").classList.add("over");
+  }));
+["dragleave", "drop"].forEach(ev =>
+  document.getElementById("buildDrop").addEventListener(ev, e => {
+    e.preventDefault();
+    document.getElementById("buildDrop").classList.remove("over");
+  }));
+document.getElementById("buildDrop").addEventListener("drop", e => {
+  if (e.dataTransfer && e.dataTransfer.files[0]) handleBriefingFile(e.dataTransfer.files[0]);
+});
+// slepen over het hele bouwscherm werkt ook
+document.getElementById("view-build").addEventListener("dragover", e => e.preventDefault());
+document.getElementById("view-build").addEventListener("drop", e => {
+  e.preventDefault();
+  if (e.dataTransfer && e.dataTransfer.files[0]) handleBriefingFile(e.dataTransfer.files[0]);
+});
+
 document.getElementById("buildSource").addEventListener("input", renderBuildPreview);
 document.getElementById("buildName").addEventListener("input", renderBuildPreview);
 document.getElementById("buildSave").addEventListener("click", saveFromBuilder);
