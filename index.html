@@ -61,6 +61,33 @@
     <div id="projectsList" class="projects-list"></div>
   </section>
 
+  <!-- BRIEFING → KLUS -->
+  <section id="view-build" class="view">
+    <div class="build-wrap">
+      <div class="field-row">
+        <button id="buildIcon" class="icon-pick" aria-label="Kies een icoon">🎬</button>
+        <input id="buildName" class="field" placeholder="Naam van de klus" autocomplete="off" />
+      </div>
+      <div id="iconRow" class="icon-row"></div>
+
+      <label class="notes-label" for="buildSource">Briefing plakken</label>
+      <textarea id="buildSource" class="field area" spellcheck="false"
+        placeholder="# Locatie of draaidag&#10;## Onderdeel&#10;Shot die je wilt maken&#10;Nog een shot"></textarea>
+      <div class="build-hint">
+        <span><b>#</b> blok — locatie of draaidag</span>
+        <span><b>##</b> onderdeel</span>
+        <span>elke andere regel is een shot</span>
+      </div>
+
+      <div class="build-preview" id="buildPreview"></div>
+
+      <div class="build-actions">
+        <button id="buildDelete" class="ghost-danger hidden">Verwijderen</button>
+        <button id="buildSave" class="primary-btn">Klus opslaan</button>
+      </div>
+    </div>
+  </section>
+
   <!-- LIJST -->
   <section id="view-list" class="view">
     <div id="actsList" class="acts-list"></div>
