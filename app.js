@@ -1683,12 +1683,29 @@ function attachSwipe(el, onCommit) {
 }
 
 // ---- Kop laten krimpen zodra je scrolt ----
+// Let op de twee verschillende grenzen. Het inklappen maakt de kop ~60px
+// korter, waardoor de pagina verschuift en de scrollpositie terugvalt. Met
+// één grens wipt hij daardoor heen en weer. Daarom: pas inklappen na 88px,
+// en pas weer uitklappen als je echt bovenaan bent. Die dode zone is groter
+// dan de sprong, dus de kop kan zichzelf niet meer aan- en uitzetten.
+const HERO_COLLAPSE_AT = 88;
+const HERO_EXPAND_AT = 6;
 let heroCompact = false;
+let heroTick = false;
+
+function syncHero() {
+  heroTick = false;
+  const y = window.scrollY;
+  const next = heroCompact ? y > HERO_EXPAND_AT : y > HERO_COLLAPSE_AT;
+  if (next === heroCompact) return;
+  heroCompact = next;
+  document.body.classList.toggle("scrolled", next);
+}
 window.addEventListener("scroll", () => {
-  const c = window.scrollY > 36;
-  if (c === heroCompact) return;
-  heroCompact = c;
-  document.body.classList.toggle("scrolled", c);
+  // één keer per beeldframe, niet bij elke scroll-gebeurtenis
+  if (heroTick) return;
+  heroTick = true;
+  requestAnimationFrame(syncHero);
 }, { passive: true });
 
 // ---- Briefing uit een bestand ----
