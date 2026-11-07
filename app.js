@@ -75,10 +75,113 @@ function loadHomeState() {
     if (raw) {
       const s = JSON.parse(raw);
       if (!s.archived) s.archived = {};
+      if (!s.projects) s.projects = {};
       return s;
     }
   } catch (e) {}
-  return { archived: {} };
+  return { archived: {}, projects: {} };
+}
+
+// ---- Klussen die je zelf in de app maakt ----
+// Ze leven in de gedeelde staat onder "home", niet in de code, zodat je
+// ze op je telefoon kunt aanmaken en ze meteen op elk toestel staan.
+function userProjects() {
+  const map = homeState.projects || {};
+  return Object.keys(map)
+    .map(id => entryVal(map, id))
+    .filter(p => p && typeof p === "object" && Array.isArray(p.acts))
+    .sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")));
+}
+function allProjects() { return [...userProjects(), ...PROJECTS]; }
+function isUserProject(id) { return !!entryVal(homeState.projects, id); }
+
+function saveProject(def) {
+  setEntry(homeState.projects, def.id, def);
+  saveHomeState();
+}
+function deleteProject(id) {
+  const prev = entryVal(homeState.projects, id);
+  setEntry(homeState.projects, id, 0); // tombstone, zodat het ook synct
+  setEntry(homeState.archived, id, 0);
+  saveHomeState();
+  return prev;
+}
+
+function slugify(s) {
+  return String(s).toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 32) || "klus";
+}
+
+// ---- Briefing → klus ----
+// De geplakte tekst is de bron. "#" is een blok (locatie of draaidag),
+// "##" een onderdeel, elke andere regel een shot. Staat er nergens een
+// "#", dan worden regels die op ":" eindigen de onderdelen.
+function parseBriefing(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const hasHash = lines.some(l => /^\s*#/.test(l));
+  const days = [];
+  const acts = [];
+  let day = null;
+  let act = null;
+
+  const newDay = (label) => {
+    const key = "b" + (days.length + 1);
+    day = { key, label: label.trim() || `Blok ${days.length + 1}` };
+    days.push(day);
+    act = null;
+  };
+  const newAct = (name) => {
+    if (!day) newDay("Draaidag");
+    act = {
+      id: `a${acts.length + 1}`,
+      order: acts.length + 1,
+      name: name.trim() || `Onderdeel ${acts.length + 1}`,
+      priority: "normal",
+      location: day.label,
+      slots: []
+    };
+    acts.push(act);
+  };
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const h = /^(#{1,3})\s*(.*)$/.exec(line);
+    if (h) {
+      if (h[1].length === 1) newDay(h[2]);
+      else newAct(h[2]);
+      continue;
+    }
+    if (!hasHash && /:\s*$/.test(line)) { newAct(line.replace(/:\s*$/, "")); continue; }
+    // opsommingstekens en nummering weghalen — die tellen we zelf
+    const shot = line.replace(/^[-*•]\s+/, "").replace(/^\d+[.)]\s+/, "").trim();
+    if (!shot) continue;
+    if (!act) newAct("Shots");
+    act.slots.push({ day: day.key, time: shot });
+  }
+
+  if (!days.length) days.push({ key: "b1", label: "Draaidag" });
+  return { days, acts: acts.filter(a => a.slots.length) };
+}
+
+function briefingToProject(name, icon, source, existingId) {
+  const { days, acts } = parseBriefing(source);
+  const id = existingId || `u-${slugify(name)}-${Date.now().toString(36)}`;
+  return {
+    id,
+    user: true,
+    name: name.trim() || "Nieuwe klus",
+    subtitle: `${acts.length} ${acts.length === 1 ? "onderdeel" : "onderdelen"} · ${acts.reduce((n, a) => n + a.slots.length, 0)} shots`,
+    icon: icon || "🎬",
+    stateKey: id,
+    doneMode: "all",
+    days,
+    crew: [{ id: "leroy", name: "Leroy", color: "#6d4dff", soft: "" }],
+    acts,
+    source,
+    created: existingId ? (entryVal(homeState.projects, existingId) || {}).created || nowIso() : nowIso()
+  };
 }
 function saveHomeState() {
   localStorage.setItem(HOME_KEY, JSON.stringify(homeState));
@@ -297,6 +400,7 @@ function showHome() {
   state = null;
   stopSync();
   document.body.classList.add("home-mode");
+  document.body.classList.remove("build-mode");
   document.getElementById("appTitle").textContent = "Shootlist";
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById("view-home").classList.add("active");
@@ -315,8 +419,9 @@ function setHomeTab(tab) {
 
 function renderHome() {
   const container = document.getElementById("projectsList");
-  const active = PROJECTS.filter(p => !isArchived(p));
-  const archived = PROJECTS.filter(p => isArchived(p));
+  const list0 = allProjects();
+  const active = list0.filter(p => !isArchived(p));
+  const archived = list0.filter(p => isArchived(p));
   for (const [el, n] of [["activeCount", active.length], ["archiveCount", archived.length]]) {
     const node = document.getElementById(el);
     node.textContent = n;
@@ -328,12 +433,22 @@ function renderHome() {
   const list = homeTab === "archive" ? archived : active;
   container.innerHTML = "";
 
+  if (homeTab !== "archive") {
+    const add = document.createElement("button");
+    add.className = "new-card";
+    add.innerHTML = `
+      <span class="new-plus">+</span>
+      <span class="new-text"><b>Nieuwe klus</b><i>Plak een briefing, de app maakt de shotlist</i></span>`;
+    add.addEventListener("click", () => navigate(() => showBuilder(null), add));
+    container.appendChild(add);
+  }
+
   if (list.length === 0) {
     const empty = document.createElement("div");
     empty.className = "home-empty";
     empty.textContent = homeTab === "archive"
       ? "Nog niks afgevinkt. Vink een klus af zodra alles gefilmd is — dan verhuist hij hierheen."
-      : "Alle klussen staan in het archief.";
+      : "Geen lopende klussen. Begin er hierboven een.";
     container.appendChild(empty);
     return;
   }
@@ -367,9 +482,14 @@ function renderHome() {
       <button class="archive-btn${arch ? " on" : ""}" type="button"
         title="${arch ? "Terugzetten naar actief" : "Afvinken — gefilmd, gaat naar archief"}"
         aria-label="${arch ? "Terugzetten naar actief" : "Afvinken als gefilmd"}"></button>
-      <div class="project-arrow">›</div>
+      ${isUserProject(p.id) ? `<button class="edit-btn" type="button" aria-label="Briefing bewerken">✎</button>` : `<div class="project-arrow">›</div>`}
     `;
-    card.addEventListener("click", () => openProject(p.id));
+    card.addEventListener("click", () => navigate(() => openProject(p.id), card));
+    const editBtn = card.querySelector(".edit-btn");
+    if (editBtn) editBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      navigate(() => showBuilder(p), card);
+    });
     card.querySelector(".archive-btn").addEventListener("click", e => {
       e.stopPropagation();
       toggleArchive(p);
@@ -391,9 +511,10 @@ function toggleArchive(p) {
 }
 
 function openProject(id) {
-  const p = PROJECTS.find(x => x.id === id);
+  const p = allProjects().find(x => x.id === id);
   if (!p) return showHome();
   stopHomeSync();
+  document.body.classList.remove("build-mode");
   project = p;
   state = loadState(p);
   openActs = new Set();
@@ -947,13 +1068,20 @@ function renderActCard(act) {
     else openActs.add(act.id);
     render();
   });
-  // de hele shotregel is het raakvlak, niet alleen het bolletje
+  // de hele shotregel is het raakvlak, niet alleen het bolletje —
+  // en je kunt hem ook naar rechts vegen om af te vinken
   card.querySelectorAll('.slot[data-slot]').forEach(el => {
+    const fire = () => {
+      const [aid, idx] = el.dataset.slot.split("|");
+      buzz(12);
+      toggleSlot(aid, parseInt(idx, 10));
+    };
     el.addEventListener('click', (e) => {
       e.stopPropagation();
-      const [aid, idx] = el.dataset.slot.split("|");
-      toggleSlot(aid, parseInt(idx, 10));
+      if (el.dataset.swiped) { delete el.dataset.swiped; return; }
+      fire();
     });
+    attachSwipe(el, fire);
   });
   card.querySelector('[data-details]').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -1228,7 +1356,8 @@ function pickSyncFields(s) {
     notes: s.notes || {},
     assign: s.assign || {},
     dates: s.dates || {},
-    archived: s.archived || {}, // alleen gevuld in de "home"-staat
+    archived: s.archived || {},  // alleen gevuld in de "home"-staat
+    projects: s.projects || {},  // zelf aangemaakte klussen, idem
     crew: s.crew || [],
     crewRemoved: s.crewRemoved || {}
   };
@@ -1259,6 +1388,7 @@ function mergeStates(local, remote) {
     assign: mergeEntryMaps(local.assign, remote.assign),
     dates: mergeEntryMaps(local.dates, remote.dates),
     archived: mergeEntryMaps(local.archived, remote.archived),
+    projects: mergeEntryMaps(local.projects, remote.projects),
     crewRemoved: tombs,
     crew: Object.values(crewMap)
       .filter(m => !(tombs[m.id] && String(tombs[m.id]) > String(m.t || "")))
@@ -1363,6 +1493,7 @@ function adoptMergedHome(remote) {
   const combined = mergeStates(local, remote);
   if (stableStringify(combined) !== stableStringify(local)) {
     homeState.archived = combined.archived;
+    homeState.projects = combined.projects || {};
     localStorage.setItem(HOME_KEY, JSON.stringify(homeState));
     if (!project) renderHome();
   }
@@ -1403,6 +1534,149 @@ document.addEventListener("visibilitychange", () => {
   if (project) pullState(); else pullHomeState();
 });
 
+// ---- Schermovergangen ----
+// View Transitions laat het scherm morphen in plaats van springen; een
+// klus-kaart groeit uit tot de kop van die klus en weer terug.
+const canMorph = () =>
+  typeof document.startViewTransition === "function" &&
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function navigate(fn, morphEl) {
+  if (!canMorph()) return fn();
+  if (morphEl) morphEl.style.viewTransitionName = "morph";
+  const t = document.startViewTransition(fn);
+  t.finished.finally(() => { if (morphEl) morphEl.style.viewTransitionName = ""; });
+}
+
+// ---- Briefing-bouwer ----
+const ICONS = ["🎬", "🐾", "🏆", "🌱", "🤝", "🎥", "🏗️", "🍽️", "🎤", "🚗", "💼", "🎉"];
+let buildEditingId = null;
+
+function showBuilder(existing) {
+  stopHomeSync();
+  stopSync();
+  project = null;
+  state = null;
+  buildEditingId = existing ? existing.id : null;
+  document.body.classList.remove("home-mode");
+  document.body.classList.add("build-mode");
+  document.getElementById("appTitle").textContent = existing ? "Klus bewerken" : "Nieuwe klus";
+  document.getElementById("buildName").value = existing ? existing.name : "";
+  document.getElementById("buildIcon").textContent = existing ? existing.icon : "🎬";
+  document.getElementById("buildSource").value = existing ? (existing.source || "") : "";
+  document.getElementById("buildDelete").classList.toggle("hidden", !existing);
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-build").classList.add("active");
+  renderIconRow();
+  renderBuildPreview();
+  window.scrollTo(0, 0);
+}
+
+function renderIconRow() {
+  const row = document.getElementById("iconRow");
+  if (row.childElementCount) return;
+  ICONS.forEach(ic => {
+    const b = document.createElement("button");
+    b.className = "icon-opt";
+    b.textContent = ic;
+    b.addEventListener("click", () => {
+      document.getElementById("buildIcon").textContent = ic;
+      row.classList.remove("open");
+      buzz(8);
+    });
+    row.appendChild(b);
+  });
+}
+
+function renderBuildPreview() {
+  const el = document.getElementById("buildPreview");
+  const { days, acts } = parseBriefing(document.getElementById("buildSource").value);
+  const shots = acts.reduce((n, a) => n + a.slots.length, 0);
+  if (!shots) {
+    el.innerHTML = `<div class="prev-empty">Plak je briefing hierboven — je ziet hier meteen wat de app ervan maakt.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="prev-sum">
+      <span><b>${days.length}</b> ${days.length === 1 ? "blok" : "blokken"}</span>
+      <span><b>${acts.length}</b> ${acts.length === 1 ? "onderdeel" : "onderdelen"}</span>
+      <span><b>${shots}</b> shots</span>
+    </div>
+    ${days.map(d => {
+      const mine = acts.filter(a => a.slots.some(s => s.day === d.key));
+      if (!mine.length) return "";
+      return `<div class="prev-block">
+        <div class="prev-block-label">${escapeHtml(d.label)}</div>
+        ${mine.map(a => `
+          <div class="prev-act">
+            <div class="prev-act-name">${escapeHtml(a.name)}<span>${a.slots.length}</span></div>
+            ${a.slots.slice(0, 3).map(s => `<div class="prev-shot">${escapeHtml(s.time)}</div>`).join("")}
+            ${a.slots.length > 3 ? `<div class="prev-more">+ ${a.slots.length - 3} meer</div>` : ""}
+          </div>`).join("")}
+      </div>`;
+    }).join("")}`;
+}
+
+function saveFromBuilder() {
+  const name = document.getElementById("buildName").value.trim();
+  const source = document.getElementById("buildSource").value;
+  const icon = document.getElementById("buildIcon").textContent;
+  const { acts } = parseBriefing(source);
+  if (!name) { showToast("Geef de klus eerst een naam"); return; }
+  if (!acts.length) { showToast("Nog geen shots gevonden in de briefing"); return; }
+  const def = briefingToProject(name, icon, source, buildEditingId);
+  saveProject(def);
+  buzz(18);
+  const id = def.id;
+  navigate(() => {
+    document.body.classList.remove("build-mode");
+    openProject(id);
+  });
+  showToast(buildEditingId ? "Klus bijgewerkt" : "Klus aangemaakt");
+}
+
+// ---- Haptiek ----
+function buzz(ms) {
+  try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
+}
+
+// ---- Vegen om af te vinken ----
+// Een shot afvinken zonder te mikken: sleep de regel naar rechts.
+function attachSwipe(el, onCommit) {
+  let x0 = 0, y0 = 0, dx = 0, dragging = false, decided = false;
+  const THRESHOLD = 72;
+  el.addEventListener("pointerdown", e => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    x0 = e.clientX; y0 = e.clientY; dx = 0; dragging = true; decided = false;
+    el.style.transition = "none";
+  });
+  el.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const ddx = e.clientX - x0, ddy = e.clientY - y0;
+    if (!decided) {
+      if (Math.abs(ddx) < 8 && Math.abs(ddy) < 8) return;
+      decided = true;
+      if (Math.abs(ddy) > Math.abs(ddx)) { dragging = false; el.style.transition = ""; return; }
+      el.setPointerCapture(e.pointerId);
+    }
+    dx = Math.max(-20, ddx);
+    el.style.transform = `translateX(${dx * 0.55}px)`;
+    el.classList.toggle("swiping", dx > 24);
+    if (dx > THRESHOLD) el.classList.add("swipe-armed");
+    else el.classList.remove("swipe-armed");
+  });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    el.style.transition = "";
+    el.style.transform = "";
+    el.classList.remove("swiping", "swipe-armed");
+    if (dx > THRESHOLD) { el.dataset.swiped = "1"; onCommit(); }
+  };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+}
+
 // ---- Kop laten krimpen zodra je scrolt ----
 let heroCompact = false;
 window.addEventListener("scroll", () => {
@@ -1411,6 +1685,25 @@ window.addEventListener("scroll", () => {
   heroCompact = c;
   document.body.classList.toggle("scrolled", c);
 }, { passive: true });
+
+// ---- Bouwer-knoppen ----
+document.getElementById("buildSource").addEventListener("input", renderBuildPreview);
+document.getElementById("buildName").addEventListener("input", renderBuildPreview);
+document.getElementById("buildSave").addEventListener("click", saveFromBuilder);
+document.getElementById("buildIcon").addEventListener("click", () => {
+  document.getElementById("iconRow").classList.toggle("open");
+});
+document.getElementById("buildDelete").addEventListener("click", () => {
+  if (!buildEditingId) return;
+  const name = (entryVal(homeState.projects, buildEditingId) || {}).name || "deze klus";
+  if (prompt(`Weet je het zeker? Typ VERWIJDER om "${name}" weg te gooien.`) !== "VERWIJDER") return;
+  const prev = deleteProject(buildEditingId);
+  buildEditingId = null;
+  navigate(() => showHome());
+  showToast(`"${name}" verwijderd`, "Ongedaan", () => {
+    if (prev) { saveProject(prev); renderHome(); }
+  }, 7000);
+});
 
 // ---- Init ----
 homeState = loadHomeState();
